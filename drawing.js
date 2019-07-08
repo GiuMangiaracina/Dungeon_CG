@@ -64,7 +64,7 @@ var nTexture 		= new Array();	//Number of textures per object
 var cx = 0;
 var cy = 0;
 var cz = -0.3;
-var elevation =270;
+var elevation =0;
 var angle = 0;
 
 var delta = 0.2;
@@ -478,9 +478,9 @@ function initInteraction(){
 		//console.log(" ("+cx + "/" + cy + "/" + cz + ") - "+ elevation + "." + angle);	
 		}
 
-var mouseState = false;
+var mouseState = true;
 var lastMouseX = -100, lastMouseY = -100;
-function doMouseDown(event) {
+/*function doMouseDown(event) {
 	lastMouseX = event.pageX;
 	lastMouseY = event.pageY;
 	mouseState = true;
@@ -489,8 +489,11 @@ function doMouseUp(event) {
 	lastMouseX = 100;
 	lastMouseY = 100;
 	mouseState = false;
-}
+}*/
 function doMouseMove(event) {
+	lastMouseX = event.pageX;
+	lastMouseY = event.pageY;
+
 	if(mouseState) {
 		var dx = event.pageX - lastMouseX;
 		
@@ -512,9 +515,9 @@ function doMouseMove(event) {
 		
 	window.addEventListener("keyup", keyFunction, false);
 	
-	canvas.addEventListener("mousedown", doMouseDown, false);
-	canvas.addEventListener("mouseup", doMouseUp, false);
-	canvas.addEventListener("mousemove", doMouseMove, false);
+	//canvas.addEventListener("mousedown", doMouseDown, false);
+	//canvas.addEventListener("mouseup", doMouseUp, false);
+	canvas.addEventListener("mouseover", doMouseMove, false);
 	
 	}
 
