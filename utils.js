@@ -1,68 +1,5 @@
-//Utils ver. 0.4
-//Includes minimal mat3 support
-//Includes texture operations
-//Includes initInteraction() function
-
 var utils={
 
-createAndCompileShaders:function(gl, shaderText) {
-  
-  var vertexShader = utils.createShader(gl, gl.VERTEX_SHADER, shaderText[0]);
-  var fragmentShader = utils.createShader(gl, gl.FRAGMENT_SHADER, shaderText[1]);
-
-  var program = utils.createProgram(gl, vertexShader, fragmentShader);
-
-  return program;
-},
-
-createShader:function(gl, type, source) {
-  var shader = gl.createShader(type);
-  gl.shaderSource(shader, source);
-  gl.compileShader(shader);
-  var success = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
-  if (success) {    
-    return shader;
-  }else{
-    console.log(gl.getShaderInfoLog(shader));  // eslint-disable-line
-    if(type == gl.VERTEX_SHADER){
-    	alert("ERROR IN VERTEX SHADER : " + gl.getShaderInfoLog(vertexShader));
-    }
-    if(type == gl.FRAGMENT_SHADER){
-    	alert("ERROR IN FRAGMENT SHADER : " + gl.getShaderInfoLog(vertexShader));
-    }
-    gl.deleteShader(shader);
-    throw "could not compile shader:" + gl.getShaderInfoLog(shader);
-  }
-
-},
-
-createProgram:function(gl, vertexShader, fragmentShader) {
-  var program = gl.createProgram();
-  gl.attachShader(program, vertexShader);
-  gl.attachShader(program, fragmentShader);
-  gl.linkProgram(program);
-  var success = gl.getProgramParameter(program, gl.LINK_STATUS);
-  if (success) {
-    return program;
-  }else{
-     throw ("program filed to link:" + gl.getProgramInfoLog (program));
-    console.log(gl.getProgramInfoLog(program));  // eslint-disable-line
-    gl.deleteProgram(program);
-    return undefined;
-  }
-},
-
- resizeCanvasToDisplaySize:function(canvas, multiplier) {
-  multiplier = multiplier || 1;
-  const width  = canvas.clientWidth  * multiplier | 0;
-  const height = canvas.clientHeight * multiplier | 0;
-  if (canvas.width !== width ||  canvas.height !== height) {
-    canvas.width  = width;
-    canvas.height = height;
-    return true;
-  }
-  return false;
-},
 //**** MODEL UTILS
 	// Function to load a 3D model in JSON format
 	get_json: function(url, func) {
@@ -101,7 +38,8 @@ createProgram:function(gl, vertexShader, fragmentShader) {
 		path to the shader's text (url)
 
 	*/
-
+	
+ 
 	loadFile: function (url, data, callback, errorCallback) {
 		// Set up an synchronous request! Important!
 		var request = new XMLHttpRequest();
@@ -143,115 +81,11 @@ createProgram:function(gl, vertexShader, fragmentShader) {
 			this.loadFile(urls[i], i, partialCallback, errorCallback);
 		}
 	},
-
-	// loadFiles: function (urls, gl, callback, errorCallback) {
- //    var numUrls = urls.length;
- //    var numComplete = 0;
- //    var result = [];
-
-	// 	// Callback for a single file
-	// 	function partialCallback(text, urlIndex) {
-	// 		result[urlIndex] = text;
-	// 		numComplete++;
-
-	// 		// When all files have downloaded
-	// 		if (numComplete == numUrls) {
-	// 			callback(gl,result);
-	// 		}
-	// 	}
-
-	// 	for (var i = 0; i < numUrls; i++) {
-	// 		this.loadFile(urls[i], i, partialCallback, errorCallback);
-	// 	}
-	// },
 	
-// *** TEXTURE UTILS (to solve problems with non power of 2 textures in webGL
-
-	getTexture: function(context, image_URL){
-
-		var image=new Image();
-		image.webglTexture=false;
-		image.isLoaded=false;
-
-		image.onload=function(e) {
-
-			var texture=context.createTexture();
-			
-			context.bindTexture(context.TEXTURE_2D, texture);
-			
-			context.texImage2D(context.TEXTURE_2D, 0, context.RGBA, context.RGBA, context.UNSIGNED_BYTE, image);
-			//context.pixelStorei(context.UNPACK_FLIP_Y_WEBGL, 1);
-			context.texParameteri(context.TEXTURE_2D, context.TEXTURE_WRAP_S, context.CLAMP_TO_EDGE); 
-			context.texParameteri(context.TEXTURE_2D, context.TEXTURE_WRAP_T, context.CLAMP_TO_EDGE);
-			context.texParameteri(context.TEXTURE_2D, context.TEXTURE_MAG_FILTER, context.LINEAR);
-			context.texParameteri(context.TEXTURE_2D, context.TEXTURE_MIN_FILTER, context.NEAREST_MIPMAP_LINEAR);
-			context.generateMipmap(context.TEXTURE_2D);
-			
-			context.bindTexture(context.TEXTURE_2D, null);
-			image.webglTexture=texture;
-			image.isLoaded=true;
-		};
-		
-		image.src=image_URL;
-
-	return image;
-	},
-
-
-
-	isPowerOfTwo: function(x) {
-		return (x & (x - 1)) == 0;
-	},
-
-	nextHighestPowerOfTwo:function(x) {
-		--x;
-		for (var i = 1; i < 32; i <<= 1) {
-			x = x | x >> i;
-		}
-		return x + 1;
-	},
-		
 	
-//*** Interaction UTILS	
-	initInteraction: function(){
-		var keyFunction =function(e) {
-			
-			if (e.keyCode == 37) {	// Left arrow
-				cx-=delta;
-			}
-			if (e.keyCode == 39) {	// Right arrow
-				cx+=delta;
-			}	
-			if (e.keyCode == 38) {	// Up arrow
-				cz-=delta;
-			}
-			if (e.keyCode == 40) {	// Down arrow
-				cz+=delta;
-			}
-			if (e.keyCode == 107) {	// Add
-				cy+=delta;
-			}
-			if (e.keyCode == 109) {	// Subtract
-				cy-=delta;
-			}
-			
-			if (e.keyCode == 65) {	// a
-				angle-=delta*10.0;
-			}
-			if (e.keyCode == 68) {	// d
-				angle+=delta*10.0;
-			}	
-			if (e.keyCode == 87) {	// w
-				elevation+=delta*10.0;
-			}
-			if (e.keyCode == 83) {	// s
-				elevation-=delta*10.0;
-			}
-			
-		}
-		//'window' is a JavaScript object (if "canvas", it will not work)
-		window.addEventListener("keyup", keyFunction, false);		
-	},
+	
+	
+	
 	
 	
 	
@@ -268,84 +102,6 @@ createProgram:function(gl, vertexShader, fragmentShader) {
 				0,1,0,0,
 				0,0,1,0,
 				0,0,0,1];
-	},
-
-	identityMatrix3: function() {
-		return [1,0,0,
-				0,1,0,
-				0,0,1];
-	},
-
-	// returns the 3x3 submatrix from a Matrix4x4
-	sub3x3from4x4: function(m){
-		out = [];
-		out[0] = m[0]; out[1] = m[1]; out[2] = m[2];
-		out[3] = m[4]; out[4] = m[5]; out[5] = m[6];
-		out[6] = m[8]; out[7] = m[9]; out[8] = m[10];
-		return out;
-	},
-
-	// Multiply the mat3 with a vec3.
-	multiplyMatrix3Vector3: function(m, a) {
-	
-		out = [];
-		var x = a[0], y = a[1], z = a[2];
-		out[0] = x * m[0] + y * m[1] + z * m[2];
-		out[1] = x * m[3] + y * m[4] + z * m[5];
-		out[2] = x * m[6] + y * m[7] + z * m[8];
-		return out;
-	},
-	
-//Transpose the values of a mat3
-
-	transposeMatrix3 : function(a) {
-
-		out = [];
-		
-		out[0] = a[0];
-		out[1] = a[3];
-		out[2] = a[6];
-		out[3] = a[1];
-		out[4] = a[4];
-		out[5] = a[7];
-		out[6] = a[2];
-		out[7] = a[5];
-		out[8] = a[8];
-	 
-		
-		return out;
-	},
-	
-	invertMatrix3: function(m){
-		out = [];
-		
-		var a00 = m[0], a01 = m[1], a02 = m[2],
-			a10 = m[3], a11 = m[4], a12 = m[5],
-			a20 = m[6], a21 = m[7], a22 = m[8],
-
-			b01 = a22 * a11 - a12 * a21,
-			b11 = -a22 * a10 + a12 * a20,
-			b21 = a21 * a10 - a11 * a20,
-
-			// Calculate the determinant
-			det = a00 * b01 + a01 * b11 + a02 * b21;
-
-		if (!det) { 
-			return null; 
-		}
-		det = 1.0 / det;
-
-		out[0] = b01 * det;
-		out[1] = (-a22 * a01 + a02 * a21) * det;
-		out[2] = (a12 * a01 - a02 * a11) * det;
-		out[3] = b11 * det;
-		out[4] = (a22 * a00 - a02 * a20) * det;
-		out[5] = (-a12 * a00 + a02 * a10) * det;
-		out[6] = b21 * det;
-		out[7] = (-a21 * a00 + a01 * a20) * det;
-		out[8] = (a11 * a00 - a01 * a10) * det;		
-		
-		return out;
 	},
 	
 	//requires as a parameter a 4x4 matrix (array of 16 values)
@@ -472,6 +228,20 @@ createProgram:function(gl, vertexShader, fragmentShader) {
 		}
 		return out;        
 	},
+	crossVector: function(u, v){
+       /* cross product of vectors [u] and  [v] */
+       
+		var out = [u[1]*v[2]-u[2]*v[1], u[2]*v[0]-u[0]*v[2], u[0]*v[1]-u[1]*v[0]];  
+		
+		return out;        
+	},
+	normalizeVector3: function(v){
+       /* cross product of vectors [u] and  [v] */
+        var len = Math.sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);
+		var out = [v[0]/len, v[1]/len, v[2]/len];  
+		
+		return out;        
+	},
 	
 	
 	
@@ -493,7 +263,6 @@ createProgram:function(gl, vertexShader, fragmentShader) {
 		out[11] = dz;
 		return out; 
 	},
-
 	
 	MakeRotateXMatrix: function(a) {
 	// Create a transform matrix for a rotation of {a} along the X axis.
@@ -522,7 +291,7 @@ createProgram:function(gl, vertexShader, fragmentShader) {
 		var s = Math.sin(adeg);
 
 		out[0] = out[10] = c;
-		out[2] = +s;
+		out[2] = s;
 		out[8] = -s;
 
 		return out; 
@@ -554,17 +323,41 @@ createProgram:function(gl, vertexShader, fragmentShader) {
 		return out; 
 	},
 
-	MakeRotateXYZMatrix: function(rx, ry, rz, s){
-	//Creates a world matrix for an object.
+	MakeScaleNuMatrix: function(sx, sy, sz) {
+	// Create a scale matrix for a scale of ({sx}, {sy}, {sz}).
 
-		var Rx = this.MakeRotateXMatrix(ry);                
-		var Ry = this.MakeRotateYMatrix(rx);
-		var Rz = this.MakeRotateZMatrix(rz);
-		
-		out = this.multiplyMatrices(Ry, Rz);
-		out = this.multiplyMatrices(Rx, out);
+		var out = this.identityMatrix();
+		out[0]  = sx;
+		out[5]  = sy;
+		out[10] = sz;
+		return out; 
+	},
 
-		return out;
+	MakeShearXMatrix: function(hy, hz) {
+	// Create a scale matrix for a scale of ({sx}, {sy}, {sz}).
+
+		var out = this.identityMatrix();
+		out[4]  = hy;
+		out[8] = hz;
+		return out; 
+	},
+
+	MakeShearYMatrix: function(hx, hz) {
+	// Create a scale matrix for a scale of ({sx}, {sy}, {sz}).
+
+		var out = this.identityMatrix();
+		out[1]  = hx;
+		out[9] = hz;
+		return out; 
+	},
+
+	MakeShearZMatrix: function(hx, hy) {
+	// Create a scale matrix for a scale of ({sx}, {sy}, {sz}).
+
+		var out = this.identityMatrix();
+		out[2]  = hx;
+		out[6] = hy;
+		return out; 
 	},
 
 
@@ -585,34 +378,6 @@ createProgram:function(gl, vertexShader, fragmentShader) {
 
 		return out;
 	},
-
-	
-	LookAt: function(cameraPosition, target, up, dst) {
-    dst = dst || new Float32Array(16);
-    var zAxis = normalize(
-        subtractVectors(cameraPosition, target));
-    var xAxis = normalize(cross(up, zAxis));
-    var yAxis = normalize(cross(zAxis, xAxis));
-
-    dst[ 0] = xAxis[0];
-    dst[ 1] = xAxis[1];
-    dst[ 2] = xAxis[2];
-    dst[ 3] = 0;
-    dst[ 4] = yAxis[0];
-    dst[ 5] = yAxis[1];
-    dst[ 6] = yAxis[2];
-    dst[ 7] = 0;
-    dst[ 8] = zAxis[0];
-    dst[ 9] = zAxis[1];
-    dst[10] = zAxis[2];
-    dst[11] = 0;
-    dst[12] = cameraPosition[0];
-    dst[13] = cameraPosition[1];
-    dst[14] = cameraPosition[2];
-    dst[15] = 1;
-
-    return dst;
-  },
 
 	MakeView: function(cx, cy, cz, elev, ang) {
 	// Creates in {out} a view matrix. The camera is centerd in ({cx}, {cy}, {cz}).
@@ -652,6 +417,48 @@ createProgram:function(gl, vertexShader, fragmentShader) {
 		perspective[15] = 0.0;	
 
 		return perspective;
-	}
+	},
 
+	MakeParallel:function(w, a, n, f) {
+	// Creates the parallel projection matrix. The matrix is returned.
+	// {w} contains the horizontal half-width in world units. {a} is the aspect ratio.
+	// {n} is the distance of the near plane, and {f} is the far plane.
+
+		var parallel = this.identityMatrix();
+
+		parallel[0] = 1.0 / w;
+		parallel[5] = a / w;
+		parallel[10] = 2.0 / (n - f);
+		parallel[11] = (n + f) / (n - f);
+
+		return parallel;
+	},
+
+	MakeLookAt: function(c, a, u) {
+	// Creates in {out} a view matrix, using the look-at from vector c to vector a.
+		
+		Vz = this.normalizeVector3([c[0]-a[0], c[1]-a[1], c[2]-a[2]]);
+		Vx = this.normalizeVector3(this.crossVector(this.normalizeVector3(u), Vz));
+		Vy = this.crossVector(Vz, Vx);
+
+		CM =  [Vx[0], Vy[0], Vz[0], c[0],
+			   Vx[1], Vy[1], Vz[1], c[1], 
+			   Vx[2], Vy[2], Vz[2], c[2],
+			    0.0,   0.0,   0.0,  1.0]
+
+// calling the invert procedure
+//		out = this.invertMatrix(CM);
+
+// manual inversion
+		out = [Vx[0], Vx[1], Vx[2], 0.0,
+			   Vy[0], Vy[1], Vy[2], 0.0, 
+			   Vz[0], Vz[1], Vz[2], 0.0,
+			    0.0,   0.0,   0.0,  1.0 ];
+		nc = this.multiplyMatrixVector(out, [c[0], c[1], c[2], 0.0]);
+		out[3]  = -nc[0];
+		out[7]  = -nc[1];
+		out[11] = -nc[2];
+
+		return out;
+	},
 }
