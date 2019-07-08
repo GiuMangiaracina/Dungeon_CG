@@ -1,6 +1,12 @@
 var canvas, checkbox;
 var gl = null;
 
+
+
+
+
+
+
 var	shaderProgram = new Array(2); //Two handles, one for each shaders' couple. 0 = goureaud; 1 = phong
 	
 var shaderDir = "http://127.0.0.1:8887/shaders/";	
@@ -58,7 +64,7 @@ var nTexture 		= new Array();	//Number of textures per object
 var cx = 0;
 var cy = 0;
 var cz = -0.3;
-var elevation =-90;
+var elevation =270;
 var angle = 0;
 
 var delta = 0.2;
@@ -392,7 +398,7 @@ function loadModel(modelName){
 					//creating the objects' world matrix
 					objectWorldMatrix[i] = loadedModel.rootnode.children[i].transformation;
 					
-					//Correcting the orientation of hogwart
+					//Correcting the orientation
 					objectWorldMatrix[i] = utils.multiplyMatrices(
 											objectWorldMatrix[i],
 											utils.MakeRotateXMatrix(-90));
@@ -434,7 +440,7 @@ function initInteraction(){
 				//else lightPosition[2] +=delta;
 			}
 			
-
+///////
 			if (e.keyCode == 107) {	// Add
 				if(moveLight == 0)  cx+=delta;
 				
@@ -447,13 +453,6 @@ function initInteraction(){
 			
 			if (e.keyCode == 65) {	// a
 				
-
-
-
-
-
-
-
 			}
 			if (e.keyCode == 68) {	// d
 				if(moveLight == 0)angle+=delta * 1.0;
@@ -500,8 +499,8 @@ function doMouseMove(event) {
 		lastMouseY = event.pageY;
 		
 		if((dx != 0) || (dy != 0)) {
-			angle = angle +  dx;
-			elevation = elevation + 0.5* dy;
+			angle = angle +  0.1*dx;
+			elevation = elevation + 0.1* dy;
 		}
 	}
 }
@@ -513,9 +512,9 @@ function doMouseMove(event) {
 		
 	window.addEventListener("keyup", keyFunction, false);
 	
-	//canvas.addEventListener("mousedown", doMouseDown, false);
-	//canvas.addEventListener("mouseup", doMouseUp, false);
-	//canvas.addEventListener("mousemove", doMouseMove, false);
+	canvas.addEventListener("mousedown", doMouseDown, false);
+	canvas.addEventListener("mouseup", doMouseUp, false);
+	canvas.addEventListener("mousemove", doMouseMove, false);
 	
 	}
 

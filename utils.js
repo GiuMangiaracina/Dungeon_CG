@@ -522,8 +522,8 @@ createProgram:function(gl, vertexShader, fragmentShader) {
 		var s = Math.sin(adeg);
 
 		out[0] = out[10] = c;
-		out[2] = -s;
-		out[8] = s;
+		out[2] = +s;
+		out[8] = -s;
 
 		return out; 
 	},
@@ -538,8 +538,8 @@ createProgram:function(gl, vertexShader, fragmentShader) {
 		var s = Math.sin(adeg);
 
 		out[0] = out[5] = c;
-		out[4] = -s;
-		out[1] = s;
+		out[4] = s;
+		out[1] = -s;
 
 		return out; 
 	},
