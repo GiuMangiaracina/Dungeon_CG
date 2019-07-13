@@ -1,12 +1,19 @@
 #version 300 es
-precision highp float; 
+precision highp float;
+
+in vec3 fsNormal;
+in vec3 fsPosition;
+in vec2 fsUVs;
+
+out vec4 outColor;
 
 uniform vec4 mDiffColor;
 uniform vec4 mSpecColor;            
 uniform float mSpecPower;
 
-uniform sampler2D textureFile;
 uniform float textureInfluence;
+uniform sampler2D textureFile;
+
 uniform float ambientLightInfluence;
 uniform vec4 ambientLightColor;
 
@@ -14,14 +21,6 @@ uniform vec3 lightDirection;
 uniform vec3 lightPosition;
 uniform vec4 lightColor;
 uniform int lightType;
-
-uniform vec3 eyePosition;
-
-in vec3 fsNormal; 
-in vec3 fsPosition; 
-in vec2 fsUVs;
-in vec2 fsUV2s;
-out vec4 outColor;
 
 //Function to create different lights types
 //int lt = the selected light source type
@@ -38,7 +37,7 @@ vec4 lightModel(int lt, vec3 pos) {
 	lDim = 1.0;
 	
 	if(lt == 1) { 			//Directional light
-		nLightDir = - normalize(lightDirection);
+		nLightDir = normalize(-lightDirection);
 	} else if(lt == 2) {	//Point light
 		nLightDir = normalize(lightPosition - pos);
 	} else if(lt == 3) {	//Point light (decay)
@@ -61,33 +60,33 @@ vec4 lightModel(int lt, vec3 pos) {
 
 void main() { 
 
-	vec3 nEyeDirection = normalize(eyePosition - fsPosition);
+	vec3 nEyeDirection = normalize(-fsPosition);
 	vec3 nNormal = normalize(fsNormal);
 	
-	//Instead of computing it as nlightDirection = - normalize(lightDirection);
-	//Now we call a function to define light direction and size even for not-directional case.
-	
+	// Instead of computing it as nlightDirection = - normalize(lightDirection),
+	// we call a function to define light direction and size even for not-directional case.
 	vec4 lm = lightModel(lightType, fsPosition);
 	vec3 nlightDirection = lm.rgb;
 	float lightDimension = lm.a;
 	
-	//Computing the color contribution from the texture
+	// Computing the color contribution from the texture.
 	vec4 diffuseTextureColorMixture = texture(textureFile, fsUVs) * textureInfluence + mDiffColor * (1.0 - textureInfluence) ;
 
-	//Computing the ambient light contribution
-	//We assume that the ambient color of the object is identical to it diffuse color (including its texture contribution)
-	vec4 ambLight = diffuseTextureColorMixture * ambientLightColor * ambientLightInfluence;
+	// Computing the ambient light contribution.
+	// We assume that the ambient color of the object is identical to it diffuse color
+	// (excluding its texture contribution).
+	vec4 phongAmbLight = ambientLightColor * ambientLightInfluence;
 	
 	if(lightType == 5){
 		outColor = diffuseTextureColorMixture;
-	}else{
-		//Computing the diffuse component of light 
-		vec4 diffuse = diffuseTextureColorMixture * lightColor * clamp(dot(nlightDirection, nNormal), 0.0, 1.0) * lightDimension;	
+	} else {
+		// Computing the diffuse component of light (excluding its texture contribution).
+		vec4 phongDiffuse = lightColor * clamp(dot(nlightDirection, nNormal), 0.0, 1.0) * lightDimension;
 		
-		//Reflection vector for Phong model
+		// Reflection vector for Phong model
 		vec3 reflection = -reflect(nlightDirection, nNormal);	
-		vec4 specular = mSpecColor * lightColor * pow(clamp(dot(reflection, nEyeDirection),0.0, 1.0), mSpecPower) * lightDimension;
-		outColor = min(ambLight + diffuse + specular, vec4(1.0, 1.0, 1.0, 1.0)); 		
+		vec4 phongSpecular = mSpecColor * lightColor * pow(clamp(dot(reflection, nEyeDirection),0.0, 1.0), mSpecPower) * lightDimension;
+		outColor = min(diffuseTextureColorMixture * (phongAmbLight + phongDiffuse + phongSpecular), vec4(1.0, 1.0, 1.0, 1.0));
 	}
 	
 

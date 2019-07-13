@@ -2,9 +2,16 @@
 in vec3 inPosition; 
 in vec3 inNormal; 
 in vec2 inUVs;
-in vec2 inUV2s;
 
-uniform mat4 wvpMatrix; 
+out vec2 fsUVs;
+
+//We have to separate the components that require the texture from the others.
+out vec4 goureaudSpecular;
+out vec4 goureaudDiffuseAndAmbient;
+
+uniform mat4 wvpMatrix;
+uniform mat4 wvMatrix;
+uniform mat3 normalMatrix;
 
 uniform vec4 mSpecColor;            
 uniform float mSpecPower;
@@ -17,35 +24,27 @@ uniform int lightType;
 uniform vec4 ambientLightColor;
 uniform float ambientLightInfluence;
 
-uniform vec3 eyePosition;
-
-out vec2 fsUVs;
-out vec2 fsUV2s;
-
-//We have to separate the components that require the texture from the others.
-out vec4 goureaudSpecular;
-out vec4 goureaudDiffuseAndAmbient;
-
-vec4 lightModel(int lt, vec3 pos) {
+vec4 lightModel(int lType, vec3 objPos) {
 	
-	//The normalize light direction
+	// The normalized light direction.
     vec3 nLightDir;
 	
-	//Float to store light dimension and cone length
+	// Float to store light dimension and cone length. Note that LDim is only useful for point light with decay
+	// and spot light.
 	float lDim, lCone;
 
 	lDim = 1.0;
 	
-	if(lt == 1) { 			//Directional light
-		nLightDir = - normalize(lightDirection);
-	} else if(lt == 2) {	//Point light
-		nLightDir = normalize(lightPosition - pos);
-	} else if(lt == 3) {	//Point light (decay)
-		float lLen = length(lightPosition - pos);
-		nLightDir = normalize(lightPosition - pos);
+	if(lType == 1) { 			// Directional light
+		nLightDir = normalize(-lightDirection);
+	} else if(lType == 2) {		// Point light
+		nLightDir = normalize(lightPosition - objPos);
+	} else if(lType == 3) {		// Point light (decay)
+		float lLen = length(lightPosition - objPos);
+		nLightDir = normalize(lightPosition - objPos);
 		lDim = 160.0 / (lLen * lLen);
-	} else if(lt == 4) {	//Spot light
-		nLightDir = normalize(lightPosition - pos);
+	} else if(lType == 4) {		// Spot light //todo edit this
+		nLightDir = normalize(lightPosition - objPos);
 		lCone = -dot(nLightDir, normalize(lightDirection));
 		if(lCone < 0.5) {
 			lDim = 0.0;
@@ -62,28 +61,32 @@ vec4 lightModel(int lt, vec3 pos) {
 void main() { 
 
 	fsUVs = inUVs;
-	fsUV2s = inUV2s;
 	gl_Position = wvpMatrix * vec4(inPosition, 1.0);
-	
-	vec3 nEyeDirection = normalize(eyePosition - inPosition);
-	vec3 nNormal = normalize(inNormal);
-	
 
+	vec3 vertexPos = (wvMatrix * vec4(inPosition, 1.0)).xyz;
+	vec3 nEyeDirection = normalize(-inPosition);
+	//vec3 nEyeDirection = normalize(-vertexPos);
+	vec3 nNormal = normalize(inNormal);
+	//vec3 nNormal = normalize(normalMatrix * inNormal);
+
+	// Instead of computing it as nlightDirection = - normalize(lightDirection),
+	// we call a function to define light direction and size even for not-directional case.
 	vec4 lm = lightModel(lightType, inPosition);
-	vec3 nlightDirection = lm.rgb;
+	//vec4 lm = lightModel(lightType, vertexPos);
+	vec3 nLightDirection = lm.rgb;
 	float lightDimension = lm.a;
 	
-	//Computing the ambient light contribution (Without the texture contribution)
+	//Computing the ambient light contribution (without the texture contribution).
 	vec4 ambLight = ambientLightColor * ambientLightInfluence;
 	if(lightType == 5){
 		goureaudSpecular = vec4(0.0, 0.0, 0.0, 0.0);
 		goureaudDiffuseAndAmbient = vec4(1.0, 1.0, 1.0, 1.0);
-	}else {
-		//Computing the diffuse component of light (Without the texture contribution)
-		vec4 diffuse = lightColor * clamp(dot(nlightDirection, nNormal), 0.0, 1.0) * lightDimension;	
+	} else {
+		// Computing the diffuse component of light (without the texture contribution).
+		vec4 diffuse = lightColor * clamp(dot(nLightDirection, nNormal), 0.0, 1.0) * lightDimension;
 		
-		//Reflection vector for Phong model
-		vec3 reflection = -reflect(nlightDirection, nNormal);	
+		//Reflection vector for Phong model.
+		vec3 reflection = -reflect(nLightDirection, nNormal);
 		vec4 specular = mSpecColor * lightColor * pow(clamp(dot(reflection, nEyeDirection),0.0, 1.0), mSpecPower) * lightDimension;
 			
 		goureaudSpecular = specular;

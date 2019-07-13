@@ -8,13 +8,17 @@ out vec3 fsPosition;
 out vec2 fsUVs;
 out vec2 fsUV2s;
 
-uniform mat4 wvpMatrix; 
+uniform mat4 wvpMatrix;
+uniform mat4 wvMatrix;
+uniform mat3 normalMatrix;
 
-
-void main() { 
-	fsNormal = inNormal; 
-	fsPosition =  inPosition;
+void main() {
+	//fsNormal = normalize(inNormal);
+	fsNormal = normalize(normalMatrix * inNormal);
+	fsPosition = (wvMatrix * vec4(inPosition, 1.0)).xyz;
 	fsUVs = inUVs;
+
+	// Position of the vertex, on which clipping, normalized and pixel coordinates are computed by WebGL.
 	gl_Position = wvpMatrix * vec4(inPosition, 1.0);
 }
 	
