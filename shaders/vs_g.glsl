@@ -64,10 +64,10 @@ void main() {
 	gl_Position = wvpMatrix * vec4(inPosition, 1.0);
 
 	vec3 vertexPos = (wvMatrix * vec4(inPosition, 1.0)).xyz;
-	vec3 nEyeDirection = normalize(-inPosition);
-	//vec3 nEyeDirection = normalize(-vertexPos);
-	vec3 nNormal = normalize(inNormal);
-	//vec3 nNormal = normalize(normalMatrix * inNormal);
+	//vec3 nEyeDirection = normalize(-inPosition);
+	vec3 nEyeDirection = normalize(-vertexPos);
+	//vec3 nNormal = normalize(inNormal);
+	vec3 nNormal = normalize(normalMatrix * inNormal);
 
 	// Instead of computing it as nlightDirection = - normalize(lightDirection),
 	// we call a function to define light direction and size even for not-directional case.

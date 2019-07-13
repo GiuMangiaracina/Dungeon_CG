@@ -2,14 +2,14 @@ var canvas, checkbox;
 var gl = null;
 
 // Two handles, one for each shaders' couple. 0 = goureaud; 1 = phong.
-var	shaderProgram = new Array(2); 
+var	shaderProgram = new Array(2);
 
 // Directory location of shaders and models.
-var shaderDir = "http://127.0.0.1:8887/shaders/";	
+var shaderDir = "http://127.0.0.1:8887/shaders/";
 var modelsDir = "http://127.0.0.1:8887/models/";
-	
+
 var perspectiveMatrix,
-	viewMatrix;
+    viewMatrix;
 var currentTime = (new Date).getTime();
 var vertexNormalHandle = new Array(2);
 var vertexPositionHandle = new Array(2);
@@ -44,9 +44,9 @@ var dirLightBeta  = -utils.degToRad(120);
 
 // Computation of direct light direction vector.
 var lightDirection = [Math.cos(dirLightAlpha) * Math.cos(dirLightBeta),
-					  Math.sin(dirLightAlpha),
-					  Math.cos(dirLightAlpha) * Math.sin(dirLightBeta),
-					  ];
+    Math.sin(dirLightAlpha),
+    Math.cos(dirLightAlpha) * Math.sin(dirLightBeta),
+];
 var lightPosition = [0.0, 3.0, 0.0];
 var lightColor = new Float32Array([1.0, 1.0, 1.0, 1.0]);	// White light.
 var moveLight = 0; //0 : move the camera - 1 : Move the lights
@@ -98,55 +98,55 @@ var door5Open=false;
 
 function main(){
 
-	canvas=document.getElementById("my-canvas");
-	checkbox = document.getElementById("chbx");
-
-	
-	try{
-		gl = canvas.getContext("webgl2", {alpha: false});
-	}catch(e){
-		 console.log(e);
-	}
-	if(gl){
-		
-		//Setting the size for the canvas equal to half the browser window
-		//and other useful parameters
-		var w=canvas.clientWidth;
-		var h=canvas.clientHeight;
-		gl.clearColor(1.0, 1.0, 1.0, 1.0);
-		gl.viewport(0.0, 0.0, w, h);
-		gl.enable(gl.DEPTH_TEST);
+    canvas=document.getElementById("my-canvas");
+    checkbox = document.getElementById("chbx");
 
 
+    try{
+        gl = canvas.getContext("webgl2", {alpha: false});
+    }catch(e){
+        console.log(e);
+    }
+    if(gl){
 
-		// Computation of the perspective matrix, done only once.
-		perspectiveMatrix = utils.MakePerspective(90, w/h, 0.1, 100.0);
+        //Setting the size for the canvas equal to half the browser window
+        //and other useful parameters
+        var w=canvas.clientWidth;
+        var h=canvas.clientHeight;
+        gl.clearColor(1.0, 1.0, 1.0, 1.0);
+        gl.viewport(0.0, 0.0, w, h);
+        gl.enable(gl.DEPTH_TEST);
 
-		// Loads the map containing the "cells" the player can or cannot go.
-		loadMap("Mapasterix.json");
 
-		// Opens the json file containing the 3D model to load,
-		// parses it to retrieve objects' data
-		// and creates the VBO and IBO from them.
-		// The vertex format is (x,y,z,nx,ny,nz,u,v).
-		loadModel("Dungeon.diff2.json");
 
-		//Load shaders' code
-		//compile them
-		//retrieve the handles
-		loadShaders();
-		//loadMap("Mapasterix.json");
-		//Setting up the interaction using keys
-		initInteraction();
+        // Computation of the perspective matrix, done only once.
+        perspectiveMatrix = utils.MakePerspective(90, w/h, 0.1, 100.0);
 
-		
-		//Rendering cycle
-drawScene();
-		
-	}else{
-		alert( "Error: Your browser does not appear to support WebGL.");
-	}
-	
+        // Loads the map containing the "cells" the player can or cannot go.
+        loadMap("Mapasterix.json");
+
+        // Opens the json file containing the 3D model to load,
+        // parses it to retrieve objects' data
+        // and creates the VBO and IBO from them.
+        // The vertex format is (x,y,z,nx,ny,nz,u,v).
+        loadModel("Dungeon.diff2.json");
+
+        //Load shaders' code
+        //compile them
+        //retrieve the handles
+        loadShaders();
+        //loadMap("Mapasterix.json");
+        //Setting up the interaction using keys
+        initInteraction();
+
+
+        //Rendering cycle
+        drawScene();
+
+    }else{
+        alert( "Error: Your browser does not appear to support WebGL.");
+    }
+
 }
 
 /**
@@ -154,7 +154,7 @@ drawScene();
  * @param val coefficient to multiply to the color given by the texture.
  */
 function updateTextureInfluence(val){
-	textureInfluence = val;
+    textureInfluence = val;
 }
 
 /**
@@ -162,18 +162,18 @@ function updateTextureInfluence(val){
  * @param val
  */
 function updateLightType(val){
-	currentLightType = parseInt(val);
+    currentLightType = parseInt(val);
 }
 
 /**
  *
  */
 function updateLightMovement(){
-	    if (checkbox.checked == true) {
-            moveLight = 1;
-        } else {
-            moveLight = 0;
-        }
+    if (checkbox.checked == true) {
+        moveLight = 1;
+    } else {
+        moveLight = 0;
+    }
 }
 
 /**
@@ -181,7 +181,7 @@ function updateLightMovement(){
  * @param val
  */
 function updateShader(val){
-	currentShader = parseInt(val);
+    currentShader = parseInt(val);
 }
 
 /**
@@ -189,7 +189,7 @@ function updateShader(val){
  * @param val
  */
 function updateAmbientLightInfluence(val){
-	ambientLightInfluence = val;
+    ambientLightInfluence = val;
 }
 
 /**
@@ -197,82 +197,82 @@ function updateAmbientLightInfluence(val){
  * @param val
  */
 function updateAmbientLightColor(val){
-	
-	val = val.replace('#','');
-	ambientLightColor[0] = parseInt(val.substring(0,2), 16) / 255;
-	ambientLightColor[1] = parseInt(val.substring(2,4), 16) / 255;
-	ambientLightColor[2] = parseInt(val.substring(4,6), 16) / 255;
-	ambientLightColor[3] = 1.0;
+
+    val = val.replace('#','');
+    ambientLightColor[0] = parseInt(val.substring(0,2), 16) / 255;
+    ambientLightColor[1] = parseInt(val.substring(2,4), 16) / 255;
+    ambientLightColor[2] = parseInt(val.substring(4,6), 16) / 255;
+    ambientLightColor[3] = 1.0;
 }
 
 /**
  *
  */
 function loadShaders(){
-	//*** Shaders loading using external files
-		
-	utils.loadFiles([shaderDir + 'vs_p.glsl',
-			shaderDir + 'fs_p.glsl',
-			shaderDir + 'vs_g.glsl',
-			shaderDir + 'fs_g.glsl'
-			],
-		function(shaderText){
-		// Even numbers are VSs, odd numbers are FSs.
-		var numShader = 0;
-		for(let i = 0; i < shaderText.length; i+=2){
-			var vertexShader = gl.createShader(gl.VERTEX_SHADER);
-			gl.shaderSource(vertexShader, shaderText[i]);
-			gl.compileShader(vertexShader);
-			if(!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)){
-				alert("ERROR IN VS SHADER : "+gl.getShaderInfoLog(vertexShader));
-			}
-			var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
-			gl.shaderSource(fragmentShader, shaderText[i+1]);
-			gl.compileShader(fragmentShader);
-			if(!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)){
-				alert("ERROR IN FS SHADER : "+gl.getShaderInfoLog(fragmentShader));
-			}
-			shaderProgram[numShader] = gl.createProgram();
-			gl.attachShader(shaderProgram[numShader], vertexShader);
-			gl.attachShader(shaderProgram[numShader], fragmentShader);
-			gl.linkProgram(shaderProgram[numShader]);
-			if(!gl.getProgramParameter(shaderProgram[numShader], gl.LINK_STATUS)){
-				alert("Unable to initialize the shader program...");
-			}
-			numShader++;
-		}
-							
-		});
-			
-		// Getting the handles to the shaders' vars.
-		for(let i = 0; i < 2; i++){
-			
-			// Get attribute locations.
-			vertexPositionHandle[i] = gl.getAttribLocation(shaderProgram[i],'inPosition');
-			vertexNormalHandle[i] = gl.getAttribLocation(shaderProgram[i],'inNormal');
-			vertexUVHandle[i] = gl.getAttribLocation(shaderProgram[i], 'inUVs');
-			
-			// Get uniform locations.
-			matrixWVHandle[i] = gl.getUniformLocation(shaderProgram[i], 'wvMatrix');
-            matrixWVPHandle[i] = gl.getUniformLocation(shaderProgram[i], 'wvpMatrix');
-            normalMatrixPositionHandle[i] = gl.getUniformLocation(shaderProgram[i],'normalMatrix');
+    //*** Shaders loading using external files
 
-            materialDiffColorHandle[i] = gl.getUniformLocation(shaderProgram[i], 'mDiffColor');
-			materialSpecColorHandle[i] = gl.getUniformLocation(shaderProgram[i], 'mSpecColor');
-			materialSpecPowerHandle[i] = gl.getUniformLocation(shaderProgram[i], 'mSpecPower');
-			textureFileHandle[i] = gl.getUniformLocation(shaderProgram[i], 'textureFile');
+    utils.loadFiles([shaderDir + 'vs_p.glsl',
+            shaderDir + 'fs_p.glsl',
+            shaderDir + 'vs_g.glsl',
+            shaderDir + 'fs_g.glsl'
+        ],
+        function(shaderText){
+            // Even numbers are VSs, odd numbers are FSs.
+            var numShader = 0;
+            for(let i = 0; i < shaderText.length; i+=2){
+                var vertexShader = gl.createShader(gl.VERTEX_SHADER);
+                gl.shaderSource(vertexShader, shaderText[i]);
+                gl.compileShader(vertexShader);
+                if(!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)){
+                    alert("ERROR IN VS SHADER : "+gl.getShaderInfoLog(vertexShader));
+                }
+                var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+                gl.shaderSource(fragmentShader, shaderText[i+1]);
+                gl.compileShader(fragmentShader);
+                if(!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)){
+                    alert("ERROR IN FS SHADER : "+gl.getShaderInfoLog(fragmentShader));
+                }
+                shaderProgram[numShader] = gl.createProgram();
+                gl.attachShader(shaderProgram[numShader], vertexShader);
+                gl.attachShader(shaderProgram[numShader], fragmentShader);
+                gl.linkProgram(shaderProgram[numShader]);
+                if(!gl.getProgramParameter(shaderProgram[numShader], gl.LINK_STATUS)){
+                    alert("Unable to initialize the shader program...");
+                }
+                numShader++;
+            }
 
-			textureInfluenceHandle[i] = gl.getUniformLocation(shaderProgram[i], 'textureInfluence');
-			ambientLightInfluenceHandle[i] = gl.getUniformLocation(shaderProgram[i], 'ambientLightInfluence');
-			ambientLightColorHandle[i]= gl.getUniformLocation(shaderProgram[i], 'ambientLightColor');
-			
-			//eyePositionHandle[i] = gl.getUniformLocation(shaderProgram[i], 'eyePosition');
-			
-			lightDirectionHandle[i] = gl.getUniformLocation(shaderProgram[i], 'lightDirection');
-			lightPositionHandle[i] = gl.getUniformLocation(shaderProgram[i], 'lightPosition');
-			lightColorHandle[i] = gl.getUniformLocation(shaderProgram[i], 'lightColor');
-			lightTypeHandle[i]= gl.getUniformLocation(shaderProgram[i],'lightType');
-		}
+        });
+
+    // Getting the handles to the shaders' vars.
+    for(let i = 0; i < 2; i++){
+
+        // Get attribute locations.
+        vertexPositionHandle[i] = gl.getAttribLocation(shaderProgram[i],'inPosition');
+        vertexNormalHandle[i] = gl.getAttribLocation(shaderProgram[i],'inNormal');
+        vertexUVHandle[i] = gl.getAttribLocation(shaderProgram[i], 'inUVs');
+
+        // Get uniform locations.
+        matrixWVHandle[i] = gl.getUniformLocation(shaderProgram[i], 'wvMatrix');
+        matrixWVPHandle[i] = gl.getUniformLocation(shaderProgram[i], 'wvpMatrix');
+        normalMatrixPositionHandle[i] = gl.getUniformLocation(shaderProgram[i],'normalMatrix');
+
+        materialDiffColorHandle[i] = gl.getUniformLocation(shaderProgram[i], 'mDiffColor');
+        materialSpecColorHandle[i] = gl.getUniformLocation(shaderProgram[i], 'mSpecColor');
+        materialSpecPowerHandle[i] = gl.getUniformLocation(shaderProgram[i], 'mSpecPower');
+        textureFileHandle[i] = gl.getUniformLocation(shaderProgram[i], 'textureFile');
+
+        textureInfluenceHandle[i] = gl.getUniformLocation(shaderProgram[i], 'textureInfluence');
+        ambientLightInfluenceHandle[i] = gl.getUniformLocation(shaderProgram[i], 'ambientLightInfluence');
+        ambientLightColorHandle[i]= gl.getUniformLocation(shaderProgram[i], 'ambientLightColor');
+
+        //eyePositionHandle[i] = gl.getUniformLocation(shaderProgram[i], 'eyePosition');
+
+        lightDirectionHandle[i] = gl.getUniformLocation(shaderProgram[i], 'lightDirection');
+        lightPositionHandle[i] = gl.getUniformLocation(shaderProgram[i], 'lightPosition');
+        lightColorHandle[i] = gl.getUniformLocation(shaderProgram[i], 'lightColor');
+        lightTypeHandle[i]= gl.getUniformLocation(shaderProgram[i],'lightType');
+    }
 }
 
 /**
@@ -280,12 +280,12 @@ function loadShaders(){
  * @param mapName Name of the file containing the map.
  */
 function loadMap(mapName){
-	utils.get_json(modelsDir + mapName, function(loadedMap){
-		dungeonMap = loadedMap;
-		console.log(dungeonMap);
-		console.log("carattere :"+ dungeonMap[11][6]);
-		//punto iniziale [11,6], 5 passi.
-	});
+    utils.get_json(modelsDir + mapName, function(loadedMap){
+        dungeonMap = loadedMap;
+        console.log(dungeonMap);
+        console.log("carattere :"+ dungeonMap[11][6]);
+        //punto iniziale [11,6], 5 passi.
+    });
 }
 
 /**
@@ -294,159 +294,159 @@ function loadMap(mapName){
  */
 function loadModel(modelName){
 
-		utils.get_json(modelsDir + modelName, function(loadedModel){
-				
-			sceneObjects = loadedModel.meshes.length ;
-				
-				console.log("Found " + sceneObjects + " objects...");
-				
-				// Preparing to store objects' world matrix & the lights & material properties per object.
-				for (let i = 0; i < sceneObjects; i++) {
-					objectWorldMatrix[i] = new utils.identityMatrix();
-					worldViewProjectionMatrix[i] =  new utils.identityMatrix();
-					diffuseColor[i] = [1.0, 1.0, 1.0, 1.0];	
-					specularColor[i] = [1.0, 1.0, 1.0, 1.0];	
-					observerPositionObj[i] = new Array(3);		
-					lightDirectionObj[i] = new Array(3);
-					lightPositionObj[i]	= new Array(3);
-				}
-				
-				for (let i = 0; i < sceneObjects ; i++) {
-					
-					// Creating the vertex data.
-					console.log("Object[" + i + "]:");
-					console.log("MeshName: " + loadedModel.rootnode.children[i].name);
-					console.log("Vertices: " + loadedModel.meshes[i].vertices.length);
-					console.log("Normals: " + loadedModel.meshes[i].normals.length);
-					if (loadedModel.meshes[i].texturecoords){
-						console.log("UVss: " + loadedModel.meshes[i].texturecoords[0].length);
-					} else {
-						console.log("No UVs for this mesh!" );
-					}
+    utils.get_json(modelsDir + modelName, function(loadedModel){
 
-					var meshMatIndex = loadedModel.meshes[i].materialindex;
-					
-					var UVFileNamePropertyIndex = -1;
-					var diffuseColorPropertyIndex = -1;
-					var specularColorPropertyIndex = -1;
-					for (n = 0; n < loadedModel.materials[meshMatIndex].properties.length; n++){
-						if(loadedModel.materials[meshMatIndex].properties[n].key === "$tex.file") UVFileNamePropertyIndex = n;
-						if(loadedModel.materials[meshMatIndex].properties[n].key === "$clr.diffuse") diffuseColorPropertyIndex = n;
-						if(loadedModel.materials[meshMatIndex].properties[n].key === "$clr.specular") specularColorPropertyIndex = n;
-					}
+        sceneObjects = loadedModel.meshes.length ;
 
-					
-					// Getting vertices and normals.
-					var objVertex = [];		
-					for (let n = 0; n < loadedModel.meshes[i].vertices.length/3; n++){
-						objVertex.push(loadedModel.meshes[i].vertices[n*3], 
-									   loadedModel.meshes[i].vertices[n*3+1],
-									   loadedModel.meshes[i].vertices[n*3+2]);
-						objVertex.push(loadedModel.meshes[i].normals[n*3], 
-									   loadedModel.meshes[i].normals[n*3+1],
-									   loadedModel.meshes[i].normals[n*3+2]);									   
-						if(UVFileNamePropertyIndex >= 0){
-							objVertex.push( loadedModel.meshes[i].texturecoords[0][n*2],
-											loadedModel.meshes[i].texturecoords[0][n*2+1]);
+        console.log("Found " + sceneObjects + " objects...");
 
-						} else {
-							objVertex.push(0.0, 0.0);
-						}
-					}
-					
-					facesNumber[i] = loadedModel.meshes[i].faces.length;
-					console.log("Face Number: " + facesNumber[i]);
+        // Preparing to store objects' world matrix & the lights & material properties per object.
+        for (let i = 0; i < sceneObjects; i++) {
+            objectWorldMatrix[i] = new utils.identityMatrix();
+            worldViewProjectionMatrix[i] =  new utils.identityMatrix();
+            diffuseColor[i] = [1.0, 1.0, 1.0, 1.0];
+            specularColor[i] = [1.0, 1.0, 1.0, 1.0];
+            observerPositionObj[i] = new Array(3);
+            lightDirectionObj[i] = new Array(3);
+            lightPositionObj[i]	= new Array(3);
+        }
 
-					//s=0;
-					
-					if(UVFileNamePropertyIndex >= 0){
-						
-						nTexture[i]=true;
-						
-						console.log(loadedModel.materials[meshMatIndex].properties[UVFileNamePropertyIndex].value);
-						var imageName = loadedModel.materials[meshMatIndex].properties[UVFileNamePropertyIndex].value;
+        for (let i = 0; i < sceneObjects ; i++) {
 
-						
-						var getTexture = function(image_URL){
+            // Creating the vertex data.
+            console.log("Object[" + i + "]:");
+            console.log("MeshName: " + loadedModel.rootnode.children[i].name);
+            console.log("Vertices: " + loadedModel.meshes[i].vertices.length);
+            console.log("Normals: " + loadedModel.meshes[i].normals.length);
+            if (loadedModel.meshes[i].texturecoords){
+                console.log("UVss: " + loadedModel.meshes[i].texturecoords[0].length);
+            } else {
+                console.log("No UVs for this mesh!" );
+            }
 
-							var image=new Image();
-							image.webglTexture=false;
+            var meshMatIndex = loadedModel.meshes[i].materialindex;
 
-							image.onload=function(e) {
+            var UVFileNamePropertyIndex = -1;
+            var diffuseColorPropertyIndex = -1;
+            var specularColorPropertyIndex = -1;
+            for (n = 0; n < loadedModel.materials[meshMatIndex].properties.length; n++){
+                if(loadedModel.materials[meshMatIndex].properties[n].key === "$tex.file") UVFileNamePropertyIndex = n;
+                if(loadedModel.materials[meshMatIndex].properties[n].key === "$clr.diffuse") diffuseColorPropertyIndex = n;
+                if(loadedModel.materials[meshMatIndex].properties[n].key === "$clr.specular") specularColorPropertyIndex = n;
+            }
 
-								var texture=gl.createTexture();
-								
-								gl.bindTexture(gl.TEXTURE_2D, texture);
-								
-								console.log("Image w=" + image.width + " Image h=" + image.height);
-								
-								/*if (!utils.isPowerOfTwo(image.width) || !utils.isPowerOfTwo(image.height)) {
-									console.log("Image " + image.src + " is not power of 2!");
-									// Scale up the texture to the next highest power of two dimensions.
-									var can = document.createElement("canvas");
-									can.width = utils.nextHighestPowerOfTwo(image.width);
-									can.height = utils.nextHighestPowerOfTwo(image.height);
-									var ctx = can.getContext("2d");
-									ctx.drawImage(image, 0, 0, image.width, image.height);
-									image = can;
-								}*/
-								gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-								gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-								gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-								gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-								gl.generateMipmap(gl.TEXTURE_2D);
-								
-								gl.bindTexture(gl.TEXTURE_2D, null);
-								image.webglTexture=texture;
-							};
-							
-							image.src=image_URL;
 
-							return image;
-							};
-							
-							diffuseTextureObj[i] = getTexture(modelsDir + imageName);
+            // Getting vertices and normals.
+            var objVertex = [];
+            for (let n = 0; n < loadedModel.meshes[i].vertices.length/3; n++){
+                objVertex.push(loadedModel.meshes[i].vertices[n*3],
+                    loadedModel.meshes[i].vertices[n*3+1],
+                    loadedModel.meshes[i].vertices[n*3+2]);
+                objVertex.push(loadedModel.meshes[i].normals[n*3],
+                    loadedModel.meshes[i].normals[n*3+1],
+                    loadedModel.meshes[i].normals[n*3+2]);
+                if(UVFileNamePropertyIndex >= 0){
+                    objVertex.push( loadedModel.meshes[i].texturecoords[0][n*2],
+                        loadedModel.meshes[i].texturecoords[0][n*2+1]);
 
-							console.log("TXT filename: " +diffuseTextureObj[i]);
-							console.log("TXT src: " +diffuseTextureObj[i].src);
-							console.log("TXT loaded?: " +diffuseTextureObj[i].webglTexture);
-					
-					} else { 
-						nTexture[i] = false;
-					}
-					
-					// Mesh color.
-					diffuseColor[i] = loadedModel.materials[meshMatIndex].properties[diffuseColorPropertyIndex].value; 		// Diffuse value
-					diffuseColor[i].push(1.0);																				// Alpha value added
-					specularColor[i] = loadedModel.materials[meshMatIndex].properties[specularColorPropertyIndex].value;	// Specular color
-					console.log("Specular: "+ specularColor[i]);
-				
-					// Vertices, normals and UV set 1.
-					vertexBufferObjectId[i] = gl.createBuffer();
-					gl.bindBuffer(gl.ARRAY_BUFFER, vertexBufferObjectId[i]);
-					gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(objVertex), gl.STATIC_DRAW);
+                } else {
+                    objVertex.push(0.0, 0.0);
+                }
+            }
 
-					// Creating index buffer. Faces in the model state the correct order of vertices in order to
-					// respect the back face culling.
-					facesData = [];				 
-					for (let n = 0; n < loadedModel.meshes[i].faces.length; n++){
-		
-						facesData.push( loadedModel.meshes[i].faces[n][0],
-										loadedModel.meshes[i].faces[n][1],
-										loadedModel.meshes[i].faces[n][2]
-										);
-					}
+            facesNumber[i] = loadedModel.meshes[i].faces.length;
+            console.log("Face Number: " + facesNumber[i]);
 
-					indexBufferObjectId[i]=gl.createBuffer ();
-					gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBufferObjectId[i]);
-					gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(facesData),gl.STATIC_DRAW);
+            //s=0;
 
-					// Creating the objects' world matrix
-					objectWorldMatrix[i] = loadedModel.rootnode.children[i].transformation;
-				} 
-			
-			
-			});
+            if(UVFileNamePropertyIndex >= 0){
+
+                nTexture[i]=true;
+
+                console.log(loadedModel.materials[meshMatIndex].properties[UVFileNamePropertyIndex].value);
+                var imageName = loadedModel.materials[meshMatIndex].properties[UVFileNamePropertyIndex].value;
+
+
+                var getTexture = function(image_URL){
+
+                    var image=new Image();
+                    image.webglTexture=false;
+
+                    image.onload=function(e) {
+
+                        var texture=gl.createTexture();
+
+                        gl.bindTexture(gl.TEXTURE_2D, texture);
+
+                        console.log("Image w=" + image.width + " Image h=" + image.height);
+
+                        /*if (!utils.isPowerOfTwo(image.width) || !utils.isPowerOfTwo(image.height)) {
+                            console.log("Image " + image.src + " is not power of 2!");
+                            // Scale up the texture to the next highest power of two dimensions.
+                            var can = document.createElement("canvas");
+                            can.width = utils.nextHighestPowerOfTwo(image.width);
+                            can.height = utils.nextHighestPowerOfTwo(image.height);
+                            var ctx = can.getContext("2d");
+                            ctx.drawImage(image, 0, 0, image.width, image.height);
+                            image = can;
+                        }*/
+                        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+                        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+                        gl.generateMipmap(gl.TEXTURE_2D);
+
+                        gl.bindTexture(gl.TEXTURE_2D, null);
+                        image.webglTexture=texture;
+                    };
+
+                    image.src=image_URL;
+
+                    return image;
+                };
+
+                diffuseTextureObj[i] = getTexture(modelsDir + imageName);
+
+                console.log("TXT filename: " +diffuseTextureObj[i]);
+                console.log("TXT src: " +diffuseTextureObj[i].src);
+                console.log("TXT loaded?: " +diffuseTextureObj[i].webglTexture);
+
+            } else {
+                nTexture[i] = false;
+            }
+
+            // Mesh color.
+            diffuseColor[i] = loadedModel.materials[meshMatIndex].properties[diffuseColorPropertyIndex].value; 		// Diffuse value
+            diffuseColor[i].push(1.0);																				// Alpha value added
+            specularColor[i] = loadedModel.materials[meshMatIndex].properties[specularColorPropertyIndex].value;	// Specular color
+            console.log("Specular: "+ specularColor[i]);
+
+            // Vertices, normals and UV set 1.
+            vertexBufferObjectId[i] = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, vertexBufferObjectId[i]);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(objVertex), gl.STATIC_DRAW);
+
+            // Creating index buffer. Faces in the model state the correct order of vertices in order to
+            // respect the back face culling.
+            facesData = [];
+            for (let n = 0; n < loadedModel.meshes[i].faces.length; n++){
+
+                facesData.push( loadedModel.meshes[i].faces[n][0],
+                    loadedModel.meshes[i].faces[n][1],
+                    loadedModel.meshes[i].faces[n][2]
+                );
+            }
+
+            indexBufferObjectId[i]=gl.createBuffer ();
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBufferObjectId[i]);
+            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(facesData),gl.STATIC_DRAW);
+
+            // Creating the objects' world matrix
+            objectWorldMatrix[i] = loadedModel.rootnode.children[i].transformation;
+        }
+
+
+    });
 
 
 }
@@ -456,152 +456,152 @@ function loadModel(modelName){
  */
 function initInteraction(){
 
-		var keyFunction =function(e) {
+    var keyFunction =function(e) {
 
-			if (e.keyCode == 37) {	// Left arrow
-				//if(moveLight == 0)
+        if (e.keyCode == 37) {	// Left arrow
+            //if(moveLight == 0)
 
-           if (dungeonMap[cz+9-delta][cx+6]!="1"){
-               cz-=delta;
+            if (dungeonMap[cz+9-delta][cx+6]!="1"){
+                cz-=delta;
 
-                                				}
+            }
 
-				//else lightPosition[0] -=delta;
-			}
-			if (e.keyCode == 39) {	// Right arrow
+            //else lightPosition[0] -=delta;
+        }
+        if (e.keyCode == 39) {	// Right arrow
 
-			 if (dungeonMap[cz+9+delta][cx+6]!="1"){
-               cz+=delta;
-                                                      				}
-                        				}
+            if (dungeonMap[cz+9+delta][cx+6]!="1"){
+                cz+=delta;
+            }
+        }
 
-				//else lightPosition[0] +=delta;
+        //else lightPosition[0] +=delta;
 
-			if (e.keyCode == 38) {	// Up arrow
-				//if(moveLight == 0)//
+        if (e.keyCode == 38) {	// Up arrow
+            //if(moveLight == 0)//
 
-				   if (dungeonMap[9+cz][cx+6+delta]!="1"){
-				             cx+=delta;
-                                        				}
+            if (dungeonMap[9+cz][cx+6+delta]!="1"){
+                cx+=delta;
+            }
 
-				//else lightPosition[2] +=delta;
-			}
-			if (e.keyCode == 40) {	// Down arrow
-				//if(moveLight == 0)  
-					 if (dungeonMap[9+cz][cx+6-delta]!="1"){
-					 cx-=delta;
-                                                     				}
-				//else lightPosition[2] +=delta;
-			}
+            //else lightPosition[2] +=delta;
+        }
+        if (e.keyCode == 40) {	// Down arrow
+            //if(moveLight == 0)
+            if (dungeonMap[9+cz][cx+6-delta]!="1"){
+                cx-=delta;
+            }
+            //else lightPosition[2] +=delta;
+        }
 
-			//to activate animation on door 5
-			if (e.keyCode == 107) {	// Add
-			//	if(moveLight == 0)  cx+=delta;
-				
-			//	else lightPosition[1] +=delta;
+        //to activate animation on door 5
+        if (e.keyCode == 107) {	// Add
+            //	if(moveLight == 0)  cx+=delta;
 
-			door5Open=true;
-			}
+            //	else lightPosition[1] +=delta;
 
-			//to get the actual position
-			if (e.keyCode == 109) {	// Subtract
+            door5Open=true;
+        }
 
-			console.log(" actual position:(cx:"+(cx+6) + "/" + "cy: "+ cy + "/" +"cz: "+ (cz+9) + ") - "+ elevation + "." + angle);
-			}
-			
-			if (e.keyCode == 65) {	// a
-				//cy += delta;
-				  if (dungeonMap[cz+9-delta][cx+6]!="1"){
-                               cz-=delta;
+        //to get the actual position
+        if (e.keyCode == 109) {	// Subtract
 
-                                                				}
-			}
-			if (e.keyCode == 68) {	// d
-				//if(moveLight == 0)angle+=delta * 1.0;
-				//else{
-				//	lightDirection[0] += 0.1 * Math.cos(utils.degToRad(angle));
-				//	lightDirection[2] += 0.1 * Math.sin(utils.degToRad(angle));
-				if (dungeonMap[cz+9+delta][cx+6]!="1"){
-                               cz+=delta;
-				}
-			}	
-			if (e.keyCode == 87) {	// w
-				//if(moveLight == 0)elevation+=delta * 10.0;
-				//else{
-				//	lightDirection[0] += 0.1 * Math.sin(utils.degToRad(angle));
+            console.log(" actual position:(cx:"+(cx+6) + "/" + "cy: "+ cy + "/" +"cz: "+ (cz+9) + ") - "+ elevation + "." + angle);
+        }
 
-				//	lightDirection[2] -= 0.1 * Math.cos(utils.degToRad(angle));
-				if (dungeonMap[9+cz][cx+6+delta]!="1"){
-                				             cx+=delta;
-                                                        				}
-				}
+        if (e.keyCode == 65) {	// a
+            //cy += delta;
+            if (dungeonMap[cz+9-delta][cx+6]!="1"){
+                cz-=delta;
 
-			if (e.keyCode == 83) {	// s
-				//if(moveLight == 0)elevation-=delta*10.0;
-				//else{
-				//	lightDirection[0] -= 0.1 * Math.sin(utils.degToRad(angle));
-				//	lightDirection[2] += 0.1 * Math.cos(utils.degToRad(angle));
-				 if (dungeonMap[9+cz][cx+6-delta]!="1"){
-                					 cx-=delta;
-                                                                     				}
-                				//else lightPosition[2] +=delta;
-                			}
+            }
+        }
+        if (e.keyCode == 68) {	// d
+            //if(moveLight == 0)angle+=delta * 1.0;
+            //else{
+            //	lightDirection[0] += 0.1 * Math.cos(utils.degToRad(angle));
+            //	lightDirection[2] += 0.1 * Math.sin(utils.degToRad(angle));
+            if (dungeonMap[cz+9+delta][cx+6]!="1"){
+                cz+=delta;
+            }
+        }
+        if (e.keyCode == 87) {	// w
+            //if(moveLight == 0)elevation+=delta * 10.0;
+            //else{
+            //	lightDirection[0] += 0.1 * Math.sin(utils.degToRad(angle));
 
+            //	lightDirection[2] -= 0.1 * Math.cos(utils.degToRad(angle));
+            if (dungeonMap[9+cz][cx+6+delta]!="1"){
+                cx+=delta;
+            }
+        }
 
+        if (e.keyCode == 83) {	// s
+            //if(moveLight == 0)elevation-=delta*10.0;
+            //else{
+            //	lightDirection[0] -= 0.1 * Math.sin(utils.degToRad(angle));
+            //	lightDirection[2] += 0.1 * Math.cos(utils.degToRad(angle));
+            if (dungeonMap[9+cz][cx+6-delta]!="1"){
+                cx-=delta;
+            }
+            //else lightPosition[2] +=delta;
+        }
 
 
 
 
-		}
 
-	var mouseState = false;
-	var lastMouseX = -100, lastMouseY = -100;
-	function doMouseDown(event) {
-		lastMouseX = event.pageX;
-		lastMouseY = event.pageY;
-		mouseState = true;
-	}
-	function doMouseUp(event) {
-		lastMouseX = 100;
-		lastMouseY = 100;
-		mouseState = false;
-	}
-	function doMouseMove(event) {
-		if(mouseState) {
-			var dx = event.pageX - lastMouseX;
-		
-			var dy = lastMouseY - event.pageY;
-			lastMouseX = event.pageX;
-			lastMouseY = event.pageY;
-		
-			if((dx != 0) || (dy != 0)) {
-				angle = angle + 0.1* dx;
-				//limit angles
 
-				console.log(angle);
-				elevation = elevation + 0.1* dy;
+    }
 
-				if (elevation>35){
-				elevation=45};
+    var mouseState = false;
+    var lastMouseX = -100, lastMouseY = -100;
+    function doMouseDown(event) {
+        lastMouseX = event.pageX;
+        lastMouseY = event.pageY;
+        mouseState = true;
+    }
+    function doMouseUp(event) {
+        lastMouseX = 100;
+        lastMouseY = 100;
+        mouseState = false;
+    }
+    function doMouseMove(event) {
+        if(mouseState) {
+            var dx = event.pageX - lastMouseX;
 
-			}
-                if (elevation<-5){
+            var dy = lastMouseY - event.pageY;
+            lastMouseX = event.pageX;
+            lastMouseY = event.pageY;
+
+            if((dx != 0) || (dy != 0)) {
+                angle = angle + 0.1* dx;
+                //limit angles
+
+                console.log(angle);
+                elevation = elevation + 0.1* dy;
+
+                if (elevation>35){
+                    elevation=45};
+
+            }
+            if (elevation<-5){
                 elevation=-5}
 
 
-		}
-	}
+        }
+    }
 
 
 //function clickOnLever(event){
 //console.log("cliccato");
 //}
 
-	//'window' is a JavaScript object (if "canvas", it will not work). todo
-	window.addEventListener("keyup", keyFunction, false);
-	canvas.addEventListener("mousedown", doMouseDown, false);
-	canvas.addEventListener("mouseup", doMouseUp, false);
-	canvas.addEventListener("mousemove", doMouseMove, false);
+    //'window' is a JavaScript object (if "canvas", it will not work). todo
+    window.addEventListener("keyup", keyFunction, false);
+    canvas.addEventListener("mousedown", doMouseDown, false);
+    canvas.addEventListener("mouseup", doMouseUp, false);
+    canvas.addEventListener("mousemove", doMouseMove, false);
 //	canvas.addEventListener("click",clickOnLever,false);
 
 //activate to have resize
@@ -615,182 +615,182 @@ function initInteraction(){
  * for further computation.
  */
 function computeMatrices() {
-	// Computation of the view matrix, done once for the whole scene.
-	viewMatrix = utils.MakeView(cx, cy, cz, elevation, angle);
+    // Computation of the view matrix, done once for the whole scene.
+    viewMatrix = utils.MakeView(cx, cy, cz, elevation, angle);
 
-	for(let i = 0; i < sceneObjects; i++){
-		// Computation of world-view, projection and normal matrices for each object of the scene.
-		worldViewMatrix[i] = utils.multiplyMatrices(viewMatrix, objectWorldMatrix[i]);
-		normalsTransformMatrix[i] = utils.transposeMatrix3(utils.invertMatrix3(utils.sub3x3from4x4(worldViewMatrix[i])));
-		worldViewProjectionMatrix[i] = utils.multiplyMatrices(perspectiveMatrix, worldViewMatrix[i]);
+    for(let i = 0; i < sceneObjects; i++){
+        // Computation of world-view, projection and normal matrices for each object of the scene.
+        worldViewMatrix[i] = utils.multiplyMatrices(viewMatrix, objectWorldMatrix[i]);
+        normalsTransformMatrix[i] = utils.transposeMatrix3(utils.invertMatrix3(utils.sub3x3from4x4(worldViewMatrix[i])));
+        worldViewProjectionMatrix[i] = utils.multiplyMatrices(perspectiveMatrix, worldViewMatrix[i]);
 
-		// Computation of light position for each object of the scene, done once in the CPU.
-		lightPositionObj[i] = utils.multiplyMatrix3Vector3(utils.sub3x3from4x4(viewMatrix), lightPosition);
+        // Computation of light position for each object of the scene, done once in the CPU.
+        lightPositionObj[i] = utils.multiplyMatrix3Vector3(utils.sub3x3from4x4(viewMatrix), lightPosition);
 
-		// Computation of light direction for each object of the scene, done once in the CPU.
-		lightDirectionObj[i] = utils.multiplyMatrix3Vector3(utils.invertMatrix3(utils.sub3x3from4x4(viewMatrix)), lightDirection);
-	}
+        // Computation of light direction for each object of the scene, done once in the CPU.
+        lightDirectionObj[i] = utils.multiplyMatrix3Vector3(utils.invertMatrix3(utils.sub3x3from4x4(viewMatrix)), lightDirection);
+    }
 }
 
 function doResize() {
-            // set canvas dimensions
-        	var canvas = document.getElementById("my-canvas");
-            if((window.innerWidth > 40) && (window.innerHeight > 240)) {
-        		canvas.width  = window.innerWidth-16;
-        		canvas.height = window.innerHeight-200;
-        		var w=canvas.clientWidth;
-        		var h=canvas.clientHeight;
+    // set canvas dimensions
+    var canvas = document.getElementById("my-canvas");
+    if((window.innerWidth > 40) && (window.innerHeight > 240)) {
+        canvas.width  = window.innerWidth-16;
+        canvas.height = window.innerHeight-200;
+        var w=canvas.clientWidth;
+        var h=canvas.clientHeight;
 
-        		gl.clearColor(0.0, 0.0, 0.0, 1.0);
-        		gl.viewport(0.0, 0.0, w, h);
+        gl.clearColor(0.0, 0.0, 0.0, 1.0);
+        gl.viewport(0.0, 0.0, w, h);
 
-        		aspectRatio = w/h;
-            }
-        }
+        aspectRatio = w/h;
+    }
+}
 /**
  * //todo comment
  */
 //function to animate door 5; it is an implementation o Bezier interpolation
- function animate(deltaT){
-alpha=deltaT/2;
-var mat=worldViewProjectionMatrix[4];
+function animate(deltaT){
+    alpha=deltaT/2;
+    var mat=worldViewProjectionMatrix[4];
 
-var uma = 1-alpha;
-if (alpha>=0 && alpha<=1)
-		{
-		var c0 = uma*uma*uma;
-		var c1 = 3*uma*uma*alpha;
-		var c2 = 3*uma*alpha*alpha;
-		var c3 = alpha*alpha*alpha;
+    var uma = 1-alpha;
+    if (alpha>=0 && alpha<=1)
+    {
+        var c0 = uma*uma*uma;
+        var c1 = 3*uma*uma*alpha;
+        var c2 = 3*uma*alpha*alpha;
+        var c3 = alpha*alpha*alpha;
         var cx=[0,0,0,0];
-	    var cy=[0,-0.10,-0.2,-0.3];
+        var cy=[0,-0.10,-0.2,-0.3];
         var cz=[0,0,0,0];
 //translation matrix
-		var MT = utils.MakeTranslateMatrix(cx[0]*c0 + cx[1]*c1 + cx[2]*c2 + cx[3]*c3,
-											cy[0]*c0 + cy[1]*c1 + cy[2]*c2 + cy[3]*c3,
-											cz[0]*c0 + cz[1]*c1 + cz[2]*c2 + cz[3]*c3);
-worldViewProjectionMatrix[4]=utils.multiplyMatrices(worldViewProjectionMatrix[4],MT);
+        var MT = utils.MakeTranslateMatrix(cx[0]*c0 + cx[1]*c1 + cx[2]*c2 + cx[3]*c3,
+            cy[0]*c0 + cy[1]*c1 + cy[2]*c2 + cy[3]*c3,
+            cz[0]*c0 + cz[1]*c1 + cz[2]*c2 + cz[3]*c3);
+        worldViewProjectionMatrix[4]=utils.multiplyMatrices(worldViewProjectionMatrix[4],MT);
 
 
- }else{
- worldViewProjectionMatrix[4]=utils.multiplyMatrices(mat,utils.MakeTranslateMatrix(0,-0.28,0));
- }
+    }else{
+        worldViewProjectionMatrix[4]=utils.multiplyMatrices(mat,utils.MakeTranslateMatrix(0,-0.28,0));
+    }
 
- }
+}
 
 
 function drawScene(){
 
-	computeMatrices();
+    computeMatrices();
 
-	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-	// Load the desired shader program: 0 -> Gouraud shading, 1 -> Phong shading.
-	gl.useProgram(shaderProgram[currentShader]);
-		
-	for(let i = 0; i < sceneObjects; i++){
+    // Load the desired shader program: 0 -> Gouraud shading, 1 -> Phong shading.
+    gl.useProgram(shaderProgram[currentShader]);
 
-		/***** UNIFORMS *****/
-		// Transform matrices.
-		//if(door5Open=false){
-		//worldViewMatrix[5]=multiplyMatrices(worldViewMatrix[5],utils.MakeTranslateMatrix(0,3,0))
-		//}
+    for(let i = 0; i < sceneObjects; i++){
 
-		gl.uniformMatrix4fv(matrixWVHandle[currentShader], gl.FALSE,
-			utils.transposeMatrix(worldViewMatrix[i]));								// VS Gouraud, VS Phong.
-		gl.uniformMatrix4fv(matrixWVPHandle[currentShader], gl.FALSE,
-			utils.transposeMatrix(worldViewProjectionMatrix[i]));					// VS Gouraud, VS Phong.
-		gl.uniformMatrix3fv(normalMatrixPositionHandle[currentShader], gl.FALSE,
-			utils.transposeMatrix3(normalsTransformMatrix[i]));						// VS Gouraud, VS Phong.
+        /***** UNIFORMS *****/
+        // Transform matrices.
+        //if(door5Open=false){
+        //worldViewMatrix[5]=multiplyMatrices(worldViewMatrix[5],utils.MakeTranslateMatrix(0,3,0))
+        //}
 
-		// Light vectors.
-		gl.uniform3f(lightDirectionHandle[currentShader], lightDirectionObj[i][0],   // VS Gouraud, FS Phong.
-			 											  lightDirectionObj[i][1],
-														  lightDirectionObj[i][2]);
+        gl.uniformMatrix4fv(matrixWVHandle[currentShader], gl.FALSE,
+            utils.transposeMatrix(worldViewMatrix[i]));								// VS Gouraud, VS Phong.
+        gl.uniformMatrix4fv(matrixWVPHandle[currentShader], gl.FALSE,
+            utils.transposeMatrix(worldViewProjectionMatrix[i]));					// VS Gouraud, VS Phong.
+        gl.uniformMatrix3fv(normalMatrixPositionHandle[currentShader], gl.FALSE,
+            utils.transposeMatrix3(normalsTransformMatrix[i]));						// VS Gouraud, VS Phong.
 
-		gl.uniform3f(lightPositionHandle[currentShader], lightPositionObj[i][0],     // VS Gouraud, FS Phong.
-														 lightPositionObj[i][1],
-														 lightPositionObj[i][2]);
+        // Light vectors.
+        gl.uniform3f(lightDirectionHandle[currentShader], lightDirectionObj[i][0],   // VS Gouraud, FS Phong.
+            lightDirectionObj[i][1],
+            lightDirectionObj[i][2]);
 
-		gl.uniform4f(lightColorHandle[currentShader], lightColor[0],				// VS Gouraud, FS Phong.
-													  lightColor[1],
-													  lightColor[2],
-													  lightColor[3]);
+        gl.uniform3f(lightPositionHandle[currentShader], lightPositionObj[i][0],     // VS Gouraud, FS Phong.
+            lightPositionObj[i][1],
+            lightPositionObj[i][2]);
 
-		gl.uniform1i(lightTypeHandle[currentShader], currentLightType);				// VS Gouraud, FS Phong.
+        gl.uniform4f(lightColorHandle[currentShader], lightColor[0],				// VS Gouraud, FS Phong.
+            lightColor[1],
+            lightColor[2],
+            lightColor[3]);
 
-		// Ambient light.
-		gl.uniform4f(ambientLightColorHandle[currentShader], ambientLightColor[0],			// VS Gouraud, FS Phong.
-															 ambientLightColor[1],
-															 ambientLightColor[2],
-															 ambientLightColor[3]);
+        gl.uniform1i(lightTypeHandle[currentShader], currentLightType);				// VS Gouraud, FS Phong.
 
-		gl.uniform1f(ambientLightInfluenceHandle[currentShader], ambientLightInfluence);	// VS Gouraud, FS Phong.
+        // Ambient light.
+        gl.uniform4f(ambientLightColorHandle[currentShader], ambientLightColor[0],			// VS Gouraud, FS Phong.
+            ambientLightColor[1],
+            ambientLightColor[2],
+            ambientLightColor[3]);
 
-		// Textures (FS Gouraud, FS Phong).
-		gl.uniform1i(textureFileHandle[currentShader], 0);		// Texture channel 0 used for diff txt.
-		if (nTexture[i] == true && diffuseTextureObj[i].webglTexture) {
-			gl.activeTexture(gl.TEXTURE0);
-			gl.bindTexture(gl.TEXTURE_2D, diffuseTextureObj[i].webglTexture);
-		}
-		gl.uniform1f(textureInfluenceHandle[currentShader], textureInfluence);
+        gl.uniform1f(ambientLightInfluenceHandle[currentShader], ambientLightInfluence);	// VS Gouraud, FS Phong.
 
-		// Diffuse color, specular color and specular "adjustment" exponent.
-		gl.uniform4f(materialDiffColorHandle[currentShader], diffuseColor[i][0],
-															 diffuseColor[i][1],
-															 diffuseColor[i][2],
-															 diffuseColor[i][3]);			// FS Gouraud, FS Phong.
-		gl.uniform4f(materialSpecColorHandle[currentShader], specularColor[i][0],
-															 specularColor[i][1],
-															 specularColor[i][2],
-															 specularColor[i][3]);		// VS Gouraud, FS Phong.
-		gl.uniform1f(materialSpecPowerHandle[currentShader], objectSpecularPower);		// VS Gouraud, FS Phong.
+        // Textures (FS Gouraud, FS Phong).
+        gl.uniform1i(textureFileHandle[currentShader], 0);		// Texture channel 0 used for diff txt.
+        if (nTexture[i] == true && diffuseTextureObj[i].webglTexture) {
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, diffuseTextureObj[i].webglTexture);
+        }
+        gl.uniform1f(textureInfluenceHandle[currentShader], textureInfluence);
+
+        // Diffuse color, specular color and specular "adjustment" exponent.
+        gl.uniform4f(materialDiffColorHandle[currentShader], diffuseColor[i][0],
+            diffuseColor[i][1],
+            diffuseColor[i][2],
+            diffuseColor[i][3]);			// FS Gouraud, FS Phong.
+        gl.uniform4f(materialSpecColorHandle[currentShader], specularColor[i][0],
+            specularColor[i][1],
+            specularColor[i][2],
+            specularColor[i][3]);		// VS Gouraud, FS Phong.
+        gl.uniform1f(materialSpecPowerHandle[currentShader], objectSpecularPower);		// VS Gouraud, FS Phong.
 
 
-		//todo this should not be needed.
-		/*gl.uniform3f(eyePositionHandle[currentShader],	observerPositionObj[i][0],
-															observerPositionObj[i][1],
-															observerPositionObj[i][2]);*/
+        //todo this should not be needed.
+        /*gl.uniform3f(eyePositionHandle[currentShader],	observerPositionObj[i][0],
+                                                            observerPositionObj[i][1],
+                                                            observerPositionObj[i][2]);*/
 
-		/***** INPUT ATTRIBUTES *****/
-		// This buffer now contains all the information needed about the vertices for each object.
-		gl.bindBuffer(gl.ARRAY_BUFFER, vertexBufferObjectId[i]);
+        /***** INPUT ATTRIBUTES *****/
+        // This buffer now contains all the information needed about the vertices for each object.
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertexBufferObjectId[i]);
 
-		// The stride is 4bytes (float dimension = 32 bit) * 8 (total size of the array buffer = 3+3+2).
-		// The various offsets state the beginning of each different attribute of the array buffer (position, normal, UV).
-		gl.enableVertexAttribArray(vertexPositionHandle[currentShader]);
-		gl.vertexAttribPointer(vertexPositionHandle[currentShader], 3, gl.FLOAT, gl.FALSE, 4 * 8, 0);
+        // The stride is 4bytes (float dimension = 32 bit) * 8 (total size of the array buffer = 3+3+2).
+        // The various offsets state the beginning of each different attribute of the array buffer (position, normal, UV).
+        gl.enableVertexAttribArray(vertexPositionHandle[currentShader]);
+        gl.vertexAttribPointer(vertexPositionHandle[currentShader], 3, gl.FLOAT, gl.FALSE, 4 * 8, 0);
 
-		gl.enableVertexAttribArray(vertexNormalHandle[currentShader]);
-		gl.vertexAttribPointer(vertexNormalHandle[currentShader], 3, gl.FLOAT, gl.FALSE, 4 * 8, 4 * 3);
+        gl.enableVertexAttribArray(vertexNormalHandle[currentShader]);
+        gl.vertexAttribPointer(vertexNormalHandle[currentShader], 3, gl.FLOAT, gl.FALSE, 4 * 8, 4 * 3);
 
-		gl.enableVertexAttribArray(vertexUVHandle[currentShader]);
-		gl.vertexAttribPointer(vertexUVHandle[currentShader], 2, gl.FLOAT, gl.FALSE, 4 * 8, 4 * 6);
+        gl.enableVertexAttribArray(vertexUVHandle[currentShader]);
+        gl.vertexAttribPointer(vertexUVHandle[currentShader], 2, gl.FLOAT, gl.FALSE, 4 * 8, 4 * 6);
 
-		// Using element because it is an array of indices.
-		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBufferObjectId[i]);
-		gl.drawElements(gl.TRIANGLES, facesNumber[i] * 3, gl.UNSIGNED_SHORT, 0);
+        // Using element because it is an array of indices.
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBufferObjectId[i]);
+        gl.drawElements(gl.TRIANGLES, facesNumber[i] * 3, gl.UNSIGNED_SHORT, 0);
 
 
 //activate door 5
-			if(door5Open==true){
-        var currentTime = (new Date).getTime();
-		var deltaT;
-		if(lastUpdateTime){
-			deltaT = (currentTime - lastUpdateTime) / 1000.0;
-		} else {
-			deltaT = 1/50;
-		}
-		lastUpdateTime = currentTime;
-		g_time += deltaT;
-        animate(g_time);
-}
+        if(door5Open==true){
+            var currentTime = (new Date).getTime();
+            var deltaT;
+            if(lastUpdateTime){
+                deltaT = (currentTime - lastUpdateTime) / 1000.0;
+            } else {
+                deltaT = 1/50;
+            }
+            lastUpdateTime = currentTime;
+            g_time += deltaT;
+            animate(g_time);
+        }
 
-		gl.disableVertexAttribArray(vertexPositionHandle[currentShader]);
-		gl.disableVertexAttribArray(vertexNormalHandle[currentShader]);
-		}
+        gl.disableVertexAttribArray(vertexPositionHandle[currentShader]);
+        gl.disableVertexAttribArray(vertexNormalHandle[currentShader]);
+    }
 
-		window.requestAnimationFrame(drawScene);
+    window.requestAnimationFrame(drawScene);
 }
 
 
