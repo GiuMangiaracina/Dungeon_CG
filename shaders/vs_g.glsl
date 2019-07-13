@@ -11,48 +11,58 @@ out vec4 goureaudDiffuseAndAmbient;
 
 uniform mat4 wvpMatrix;
 uniform mat4 wvMatrix;
-uniform mat3 normalMatrix;
+uniform mat4 normalMatrix;
 
 uniform vec4 mSpecColor;            
 uniform float mSpecPower;
 
 uniform vec3 lightDirection;
-uniform vec3 lightPosition;
+uniform vec4 lightPosition;
 uniform vec4 lightColor;
 uniform int lightType;
 
 uniform vec4 ambientLightColor;
 uniform float ambientLightInfluence;
 
-vec4 lightModel(int lType, vec3 objPos) {
+float lightTargetDistance = 61.0;		// Target distance (g) for point light with decay and spot light.
+float lightDecay = 1.0;                 // Decay (beta) for point light with decay and spot light.
+float outerConeAngle = 30.0;            // Angle of the outer cone for spot light (in degrees).
+float innerConeAngle = 24.0;            // Angle of the inner cone for spot light (in degrees).
+
+vec4 lightModel(int lightType, vec3 objPos) {
 	
 	// The normalized light direction.
     vec3 nLightDir;
 	
 	// Float to store light dimension and cone length. Note that LDim is only useful for point light with decay
 	// and spot light.
-	float lDim, lCone;
+	float lDim, lCosIn, lCosOut, lCone;
 
 	lDim = 1.0;
 	
-	if(lType == 1) { 			// Directional light
+	if(lightType == 1) { 			// Directional light
 		nLightDir = normalize(-lightDirection);
-	} else if(lType == 2) {		// Point light
-		nLightDir = normalize(lightPosition - objPos);
-	} else if(lType == 3) {		// Point light (decay)
-		float lLen = length(lightPosition - objPos);
-		nLightDir = normalize(lightPosition - objPos);
-		lDim = 160.0 / (lLen * lLen);
-	} else if(lType == 4) {		// Spot light //todo edit this
-		nLightDir = normalize(lightPosition - objPos);
+	} else if(lightType == 2) {		// Point light
+		nLightDir = normalize(vec3(lightPosition) - objPos);
+	} else if(lightType == 3) {		// Point light (decay)
+		float lLen = length(vec3(lightPosition) - objPos);
+		nLightDir = normalize(vec3(lightPosition) - objPos);
+		lDim = pow((lightTargetDistance / length(vec3(lightPosition) - objPos)), lightDecay);
+		//lDim = 160.0 / (lLen * lLen);
+	} else if(lightType == 4) {		// Spot light //todo edit this
+		nLightDir = normalize(vec3(lightPosition) - objPos);
+		lCosIn = cos(radians(innerConeAngle / 2.0));
+		lCosOut = cos(radians(outerConeAngle / 2.0));
 		lCone = -dot(nLightDir, normalize(lightDirection));
-		if(lCone < 0.5) {
+		lDim = pow((lightTargetDistance / length(vec3(lightPosition) - objPos)), lightDecay) *
+				clamp((lCone - lCosOut) / (lCosIn - lCosOut), 0.0, 1.0);
+		/*if(lCone < 0.5) {
 			lDim = 0.0;
 		} else if(lCone > 0.7) {
 			lDim = 1.0;
 		} else {
 			lDim = (lCone - 0.5) / 0.2;
-		}
+		}*/
 	}
 	return vec4(nLightDir, lDim);
 }
@@ -67,12 +77,12 @@ void main() {
 	//vec3 nEyeDirection = normalize(-inPosition);
 	vec3 nEyeDirection = normalize(-vertexPos);
 	//vec3 nNormal = normalize(inNormal);
-	vec3 nNormal = normalize(normalMatrix * inNormal);
+	vec3 nNormal = normalize(mat3(normalMatrix) * inNormal);
 
 	// Instead of computing it as nlightDirection = - normalize(lightDirection),
 	// we call a function to define light direction and size even for not-directional case.
-	vec4 lm = lightModel(lightType, inPosition);
-	//vec4 lm = lightModel(lightType, vertexPos);
+	//vec4 lm = lightModel(lightType, inPosition);
+	vec4 lm = lightModel(lightType, vertexPos);
 	vec3 nLightDirection = lm.rgb;
 	float lightDimension = lm.a;
 	

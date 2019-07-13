@@ -33,7 +33,7 @@ var lightDirectionHandle = new Array(2);
 var lightPositionHandle = new Array(2);
 var lightColorHandle  = new Array(2);
 var lightTypeHandle = new Array(2);
-var	eyePositionHandle = new Array(2);
+//var eyePositionHandle = new Array(2);
 var materialSpecColorHandle = new Array(2);
 var materialSpecPowerHandle  = new Array(2);			// It's the handle for the exponent used to tune the specular reflection.
 var objectSpecularPower = 20.0;									// Actual exponent used.
@@ -47,9 +47,9 @@ var lightDirection = [Math.cos(dirLightAlpha) * Math.cos(dirLightBeta),
     Math.sin(dirLightAlpha),
     Math.cos(dirLightAlpha) * Math.sin(dirLightBeta),
 ];
-var lightPosition = [0.0, 3.0, 0.0];
+var lightPosition = [0.0, 5.0, 0.0, 1.0];
 var lightColor = new Float32Array([1.0, 1.0, 1.0, 1.0]);	// White light.
-var moveLight = 0; //0 : move the camera - 1 : Move the lights
+var moveLight = 0;                                              //0 : move the camera - 1 : Move the lights
 
 var sceneObjects; // Total number of objects in the scene.
 
@@ -79,13 +79,13 @@ var delta = 1;
 var lastUpdateTime;
 g_time=0;
 // Eye parameters: we need one eye vector for each object in the scene.
-var observerPositionObj = [];
+//var observerPositionObj = [];
 
 // Transformed light direction and position for the scene. We need a matrix for each object.
-var lightDirectionObj = [];
-var lightPositionObj = [];
+var lightDirectionTransformed = [];
+var lightPositionTransformed = [];
 
-var currentLightType = 1;         				// 1 -> Direct, 2 -> Point, 3 -> Point with decay, 4 -> Spot.
+var currentLightType = 2;         				// 1 -> Direct, 2 -> Point, 3 -> Point with decay, 4 -> Spot.
 var currentShader = 0;                			// Defines the current shader in use (0 -> Gouraud, 1 -> Phong).
 var textureInfluence = 0.0;						// Slider value for texture influence.
 var ambientLightInfluence = 0.0;				// Slider value for light influence.
@@ -306,9 +306,9 @@ function loadModel(modelName){
             worldViewProjectionMatrix[i] =  new utils.identityMatrix();
             diffuseColor[i] = [1.0, 1.0, 1.0, 1.0];
             specularColor[i] = [1.0, 1.0, 1.0, 1.0];
-            observerPositionObj[i] = new Array(3);
-            lightDirectionObj[i] = new Array(3);
-            lightPositionObj[i]	= new Array(3);
+            //observerPositionObj[i] = new Array(3);
+            lightDirectionTransformed[i] = new Array(3);
+            lightPositionTransformed[i]	= new Array(4);
         }
 
         for (let i = 0; i < sceneObjects ; i++) {
@@ -532,7 +532,7 @@ function initInteraction(){
 
             //	lightDirection[2] -= 0.1 * Math.cos(utils.degToRad(angle));
             if (dungeonMap[9+cz][cx+6+delta]!="1"){
-                cx+=delta;
+                cy+=delta;
             }
         }
 
@@ -542,7 +542,7 @@ function initInteraction(){
             //	lightDirection[0] -= 0.1 * Math.sin(utils.degToRad(angle));
             //	lightDirection[2] += 0.1 * Math.cos(utils.degToRad(angle));
             if (dungeonMap[9+cz][cx+6-delta]!="1"){
-                cx-=delta;
+                cy-=delta;
             }
             //else lightPosition[2] +=delta;
         }
@@ -618,17 +618,17 @@ function computeMatrices() {
     // Computation of the view matrix, done once for the whole scene.
     viewMatrix = utils.MakeView(cx, cy, cz, elevation, angle);
 
+    // Computation of light position for the whole scene, done once in the CPU.
+    lightPositionTransformed = utils.multiplyMatrixVector(viewMatrix, lightPosition);
+
+    // Computation of light direction for the whole the scene, done once in the CPU.
+    lightDirectionTransformed = utils.multiplyMatrix3Vector3(utils.sub3x3from4x4(viewMatrix), lightDirection);
+
     for(let i = 0; i < sceneObjects; i++){
         // Computation of world-view, projection and normal matrices for each object of the scene.
         worldViewMatrix[i] = utils.multiplyMatrices(viewMatrix, objectWorldMatrix[i]);
-        normalsTransformMatrix[i] = utils.transposeMatrix3(utils.invertMatrix3(utils.sub3x3from4x4(worldViewMatrix[i])));
         worldViewProjectionMatrix[i] = utils.multiplyMatrices(perspectiveMatrix, worldViewMatrix[i]);
-
-        // Computation of light position for each object of the scene, done once in the CPU.
-        lightPositionObj[i] = utils.multiplyMatrix3Vector3(utils.sub3x3from4x4(viewMatrix), lightPosition);
-
-        // Computation of light direction for each object of the scene, done once in the CPU.
-        lightDirectionObj[i] = utils.multiplyMatrix3Vector3(utils.invertMatrix3(utils.sub3x3from4x4(viewMatrix)), lightDirection);
+        normalsTransformMatrix[i] = utils.invertMatrix(utils.transposeMatrix(worldViewMatrix[i]));
     }
 }
 
@@ -700,22 +700,13 @@ function drawScene(){
             utils.transposeMatrix(worldViewMatrix[i]));								// VS Gouraud, VS Phong.
         gl.uniformMatrix4fv(matrixWVPHandle[currentShader], gl.FALSE,
             utils.transposeMatrix(worldViewProjectionMatrix[i]));					// VS Gouraud, VS Phong.
-        gl.uniformMatrix3fv(normalMatrixPositionHandle[currentShader], gl.FALSE,
-            utils.transposeMatrix3(normalsTransformMatrix[i]));						// VS Gouraud, VS Phong.
+        gl.uniformMatrix4fv(normalMatrixPositionHandle[currentShader], gl.FALSE,
+            utils.transposeMatrix(normalsTransformMatrix[i]));						// VS Gouraud, VS Phong.
 
         // Light vectors.
-        gl.uniform3f(lightDirectionHandle[currentShader], lightDirectionObj[i][0],   // VS Gouraud, FS Phong.
-            lightDirectionObj[i][1],
-            lightDirectionObj[i][2]);
-
-        gl.uniform3f(lightPositionHandle[currentShader], lightPositionObj[i][0],     // VS Gouraud, FS Phong.
-            lightPositionObj[i][1],
-            lightPositionObj[i][2]);
-
-        gl.uniform4f(lightColorHandle[currentShader], lightColor[0],				// VS Gouraud, FS Phong.
-            lightColor[1],
-            lightColor[2],
-            lightColor[3]);
+        gl.uniform3fv(lightDirectionHandle[currentShader], lightDirectionTransformed);
+        gl.uniform4fv(lightPositionHandle[currentShader], lightPositionTransformed);
+        gl.uniform4fv(lightColorHandle[currentShader], lightColor);
 
         gl.uniform1i(lightTypeHandle[currentShader], currentLightType);				// VS Gouraud, FS Phong.
 

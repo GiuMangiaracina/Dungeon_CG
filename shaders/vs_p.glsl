@@ -10,11 +10,11 @@ out vec2 fsUV2s;
 
 uniform mat4 wvpMatrix;
 uniform mat4 wvMatrix;
-uniform mat3 normalMatrix;
+uniform mat4 normalMatrix;
 
 void main() {
 	//fsNormal = normalize(inNormal);
-	fsNormal = normalize(normalMatrix * inNormal);
+	fsNormal = normalize(mat3(normalMatrix) * inNormal);
 	fsPosition = (wvMatrix * vec4(inPosition, 1.0)).xyz;
 	fsUVs = inUVs;
 

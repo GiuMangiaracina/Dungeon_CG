@@ -18,7 +18,7 @@ uniform float ambientLightInfluence;
 uniform vec4 ambientLightColor;
 
 uniform vec3 lightDirection;
-uniform vec3 lightPosition;
+uniform vec4 lightPosition;
 uniform vec4 lightColor;
 uniform int lightType;
 
@@ -26,26 +26,26 @@ uniform int lightType;
 //int lt = the selected light source type
 //vec3 pos = the surface position
 
-vec4 lightModel(int lt, vec3 pos) {
+vec4 lightModel(int lightType, vec3 objPos) {
 	
-	//The normalize light direction
+	// The normalized light direction.
     vec3 nLightDir;
 	
-	//Float to store light dimension and cone length
+	// Float to store light dimension and cone length.
 	float lDim, lCone;
 
 	lDim = 1.0;
 	
-	if(lt == 1) { 			//Directional light
+	if(lightType == 1) { 			//Directional light
 		nLightDir = normalize(-lightDirection);
-	} else if(lt == 2) {	//Point light
-		nLightDir = normalize(lightPosition - pos);
-	} else if(lt == 3) {	//Point light (decay)
-		float lLen = length(lightPosition - pos);
-		nLightDir = normalize(lightPosition - pos);
+	} else if(lightType == 2) {	//Point light
+		nLightDir = normalize(lightPosition.xyz - objPos);
+	} else if(lightType == 3) {	//Point light (decay)
+		float lLen = length(lightPosition.xyz - objPos);
+		nLightDir = normalize(lightPosition.xyz - objPos);
 		lDim = 160.0 / (lLen * lLen);
-	} else if(lt == 4) {	//Spot light
-		nLightDir = normalize(lightPosition - pos);
+	} else if(lightType == 4) {	//Spot light
+		nLightDir = normalize(lightPosition.xyz - objPos);
 		lCone = -dot(nLightDir, normalize(lightDirection));
 		if(lCone < 0.5) {
 			lDim = 0.0;
@@ -86,7 +86,7 @@ void main() {
 		// Reflection vector for Phong model
 		vec3 reflection = -reflect(nlightDirection, nNormal);	
 		vec4 phongSpecular = mSpecColor * lightColor * pow(clamp(dot(reflection, nEyeDirection),0.0, 1.0), mSpecPower) * lightDimension;
-		outColor = min(diffuseTextureColorMixture * (phongAmbLight + phongDiffuse + phongSpecular), vec4(1.0, 1.0, 1.0, 1.0));
+		outColor = min((diffuseTextureColorMixture * (phongAmbLight + phongDiffuse)) + phongSpecular, vec4(1.0, 1.0, 1.0, 1.0));
 	}
 	
 

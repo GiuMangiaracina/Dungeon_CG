@@ -237,6 +237,14 @@ var utils={
 		return out;        
 	},
 
+	dotVector3: function(u, v) {
+		return u.x * v.x + u.y * v.y + u.z * v.z;
+	},
+
+	lengthVector3: function(v) {
+		return Math.sqrt(this.dotVector3(v, v));
+	},
+
 	normalizeVector3: function(v){
        /* cross product of vectors [u] and  [v] */
         var len = Math.sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);

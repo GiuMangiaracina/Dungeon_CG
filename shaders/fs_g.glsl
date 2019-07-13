@@ -17,5 +17,5 @@ void main() {
 
 	//Computing the color contribution from the texture
 	vec4 diffuseTextureColorMixture = mDiffColor * (1.0 - textureInfluence) + texture(textureFile, fsUVs) * textureInfluence ;
-	outColor = min(diffuseTextureColorMixture * (goureaudSpecular + goureaudDiffuseAndAmbient), vec4(1.0, 1.0, 1.0, 1.0)); 
+	outColor = min((diffuseTextureColorMixture * goureaudDiffuseAndAmbient) + goureaudSpecular, vec4(1.0, 1.0, 1.0, 1.0));
 }
