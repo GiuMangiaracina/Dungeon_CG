@@ -532,7 +532,7 @@ function initInteraction(){
 
             //	lightDirection[2] -= 0.1 * Math.cos(utils.degToRad(angle));
             if (dungeonMap[9+cz][cx+6+delta]!="1"){
-                cy+=delta;
+                cx+=delta;
             }
         }
 
@@ -542,7 +542,7 @@ function initInteraction(){
             //	lightDirection[0] -= 0.1 * Math.sin(utils.degToRad(angle));
             //	lightDirection[2] += 0.1 * Math.cos(utils.degToRad(angle));
             if (dungeonMap[9+cz][cx+6-delta]!="1"){
-                cy-=delta;
+                cx-=delta;
             }
             //else lightPosition[2] +=delta;
         }
