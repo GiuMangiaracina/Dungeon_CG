@@ -490,7 +490,14 @@ function doMouseUp(event) {
 	lastMouseY = 100;
 	mouseState = false;
 }*/
-function doMouseMove(event) {
+function updateCameraOrientation(event) {
+	// Requires mouse pointer lock when clicking on the canva (both chrome and mozilla version).
+	canvas.requestPointerLock = canvas.requestPointerLock ||
+                            canvas.mozRequestPointerLock;
+
+	document.exitPointerLock = document.exitPointerLock ||
+                           document.mozExitPointerLock;
+	
 	lastMouseX = event.pageX;
 	lastMouseY = event.pageY;
 
@@ -517,9 +524,11 @@ function doMouseMove(event) {
 	
 	//canvas.addEventListener("mousedown", doMouseDown, false);
 	//canvas.addEventListener("mouseup", doMouseUp, false);
-	canvas.addEventListener("mouseover", doMouseMove, false);
-	
+	canvas.onclick = function() {
+		canvas.requestPointerLock();
 	}
+	
+}
 
 
 function computeMatrices(){
