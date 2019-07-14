@@ -84,6 +84,13 @@ var delta = 1;
 //parameters for time
 var lastUpdateTime;
 g_time=0;
+var lastUpdateTime2;
+g_time2=0;
+
+var lastUpdateTime3;
+g_time3=0;
+
+var currentTime = (new Date).getTime();
 // Eye parameters: we need one eye vector for each object in the scene.
 //var observerPositionObj = [];
 
@@ -95,7 +102,15 @@ var ambientLightColor = [1.0, 1.0, 1.0, 1.0];	// Starting light color is white.
 var dungeonMap = [];				// Matrix containing the map that states where the can or cannot go.
 
 //boolean to activate door 5
+//boolean to activate doors
 var door5Open=false;
+var door3Open=false;
+var door1Open=false;
+
+//boolean to activate levers
+var lever5=false;
+var lever3=false;
+var lever1=false
 
 function main(){
 
@@ -467,42 +482,6 @@ function initInteraction(){
 
     var keyFunction =function(e) {
 
-        if (e.keyCode == 37) {	// Left arrow
-            //if(moveLight == 0)
-
-            if (dungeonMap[cz+9-delta][cx+6]!="1"){
-                cz-=delta;
-
-            }
-
-            //else lightPosition[0] -=delta;
-        }
-        if (e.keyCode == 39) {	// Right arrow
-
-            if (dungeonMap[cz+9+delta][cx+6]!="1"){
-                cz+=delta;
-            }
-        }
-
-        //else lightPosition[0] +=delta;
-
-        if (e.keyCode == 38) {	// Up arrow
-            //if(moveLight == 0)//
-
-            if (dungeonMap[9+cz][cx+6+delta]!="1"){
-                cx+=delta;
-            }
-
-            //else lightPosition[2] +=delta;
-        }
-        if (e.keyCode == 40) {	// Down arrow
-            //if(moveLight == 0)
-            if (dungeonMap[9+cz][cx+6-delta]!="1"){
-                cx-=delta;
-            }
-            //else lightPosition[2] +=delta;
-        }
-
         //to activate animation on door 5
         if (e.keyCode == 107) {	// Add
             //	if(moveLight == 0)  cx+=delta;
@@ -515,13 +494,14 @@ function initInteraction(){
         //to get the actual position
         if (e.keyCode == 109) {	// Subtract
 
-            console.log(" actual position:(cx:"+(cx+6) + "/" + "cy: "+ cy + "/" +"cz: "+ (cz+9) + ") - "+ elevation + "." + angle);
+            console.log(" actual position:(cx:"+(cx) + "/" + "cy: "+ cy + "/" +"cz: "+ (cz) + ") - "+ elevation + "." + angle);
+            console.log(" map position:(cx:"+(cx+6) + "/" + "cy: "+ cy + "/" +"cz: "+ (cz+9) + ") - "+ elevation + "." + angle);
         }
 
         if (e.keyCode == 65) {	// a
             //cy += delta;
-            if (dungeonMap[cz+9-delta][cx+6]!="1"){
-                cz-=delta;
+            if ((dungeonMap[cz+9-delta][cx+6]!="1" && dungeonMap[cz+9-delta][cx+6]!="2")||((cx==4 && cz==-1) && door5Open==true)||((cx==9 &&cz==4)&& door3Open==true)  ) {
+               cz-=delta;
 
             }
         }
@@ -530,16 +510,20 @@ function initInteraction(){
             //else{
             //	lightDirection[0] += 0.1 * Math.cos(utils.degToRad(angle));
             //	lightDirection[2] += 0.1 * Math.sin(utils.degToRad(angle));
-            if (dungeonMap[cz+9+delta][cx+6]!="1"){
-                cz+=delta;
+            if ((dungeonMap[cz+9+delta][cx+6]!="1" && dungeonMap[cz+9+delta][cx+6]!="2")||((cx==4 && cz==-3) && door5Open==true )||((cx==9 &&cz==4)&&door3Open==true)||(cx==9 && cz==2 && door3Open==true)){
+               cz+=delta;
             }
         }
+
         if (e.keyCode === 87) {	// w
             //if(moveLight == 0)elevation+=delta * 10.0;
             //else{
             //	lightDirection[0] += 0.1 * Math.sin(utils.degToRad(angle));
 
             //	lightDirection[2] -= 0.1 * Math.cos(utils.degToRad(angle));
+          if ((dungeonMap[9+cz][cx+6+delta]!="1"&& dungeonMap[9+cz][cx+6+delta]!="2")||((cx==4 && cz==-3) && door5Open==true )||(cx==3&& cz==3 && door1Open==true)){
+                             cx+=delta;
+                                                        }
             if(angle > -45.0 && angle <= 45.0) {                       // Looking forward.
                 if (dungeonMap[9 + cz + delta][cx + 6] != "1") {
                     cz += delta;
@@ -561,12 +545,29 @@ function initInteraction(){
             //else{
             //	lightDirection[0] -= 0.1 * Math.sin(utils.degToRad(angle));
             //	lightDirection[2] += 0.1 * Math.cos(utils.degToRad(angle));
-            if (dungeonMap[9+cz][cx+6-delta]!="1"){
-                cx-=delta;
-            }
+          if ((dungeonMap[9+cz][cx+6-delta]!="1"&& dungeonMap[9+cz][cx+6-delta]!="2")||(cx==5&&cz==3&&door1Open==true)) {
+                     cx-=delta;
+                                                                    }
             //else lightPosition[2] +=delta;
         }
+
+
+        if (e.keyCode === 81 ) {  // q
+
+            if(lever5 === true && door5Open === false) {
+                door5Open = true;
+            }
+            else if(lever3 === true && door3Open === false) {
+                door3Open = true;
+            }
+            else if(lever1 === true && door1Open === false){
+                door1Open = true;
+            }
+
+        }
     };
+
+
 
     /*var mouseState = false;
     var lastMouseX = -100, lastMouseY = -100;
@@ -596,11 +597,12 @@ function initInteraction(){
                 elevation = elevation + 0.1* dy;
 
                 if (elevation>35){
-                    elevation=35};
+                    elevation=35;}
 
                 }
-            if (elevation<-35){
-                elevation=-35}
+            if (elevation<-35)
+            {
+                elevation=-35;}
 
 
         }
@@ -724,13 +726,12 @@ function doResize() {
  * //todo comment
  */
 //function to animate door 5; it is an implementation o Bezier interpolation
-function animate(deltaT){
+function animate5(deltaT){
     alpha=deltaT/2;
     var mat=worldViewProjectionMatrix[4];
 
     var uma = 1-alpha;
-    if (alpha>=0 && alpha<=1)
-    {
+    if (alpha>=0 && alpha<=1) {
         var c0 = uma*uma*uma;
         var c1 = 3*uma*uma*alpha;
         var c2 = 3*uma*alpha*alpha;
@@ -740,17 +741,157 @@ function animate(deltaT){
         var cz=[0,0,0,0];
 //translation matrix
         var MT = utils.MakeTranslateMatrix(cx[0]*c0 + cx[1]*c1 + cx[2]*c2 + cx[3]*c3,
-            cy[0]*c0 + cy[1]*c1 + cy[2]*c2 + cy[3]*c3,
-            cz[0]*c0 + cz[1]*c1 + cz[2]*c2 + cz[3]*c3);
-        worldViewProjectionMatrix[4]=utils.multiplyMatrices(worldViewProjectionMatrix[4],MT);
+                                            cy[0]*c0 + cy[1]*c1 + cy[2]*c2 + cy[3]*c3,
+                                            cz[0]*c0 + cz[1]*c1 + cz[2]*c2 + cz[3]*c3);
 
 
-    }else{
-        worldViewProjectionMatrix[4]=utils.multiplyMatrices(mat,utils.MakeTranslateMatrix(0,-0.28,0));
-    }
+worldViewProjectionMatrix[4]=utils.multiplyMatrices(worldViewProjectionMatrix[4],MT);
+
+
+ }else{
+ worldViewProjectionMatrix[4]=utils.multiplyMatrices(mat,utils.MakeTranslateMatrix(0,-0.28,0));
+}
+}
+
+
+
+
+function turnDownLever5(deltaT){
+
+alpha=deltaT;
+
+var uma = 1-alpha;
+if (alpha>=0 && alpha<=1)
+        {
+        var c0 = uma*uma*uma;
+        var c1 = 3*uma*uma*alpha;
+        var c2 = 3*uma*alpha*alpha;
+        var c3 = alpha*alpha*alpha;
+        var cx=[0,0,0,0];
+        var cy=[0,0,0,0];
+        var cz=[-0.001,-0.0025,-0.002,-0.0025];
+//translation matrix
+        var MT = utils.MakeTranslateMatrix(cx[0]*c0 + cx[1]*c1 + cx[2]*c2 + cx[3]*c3,
+                                            cy[0]*c0 + cy[1]*c1 + cy[2]*c2 + cy[3]*c3,
+                                            cz[0]*c0 + cz[1]*c1 + cz[2]*c2 + cz[3]*c3);
+
+
+
+var MS=utils.multiplyMatrices(MT,utils.MakeRotateXMatrix(180));
+
+worldViewProjectionMatrix[3]=utils.multiplyMatrices(MS,worldViewProjectionMatrix[3]);
+}
 
 }
 
+ function animate3(deltaT){
+alpha=deltaT/2;
+var mat=worldViewProjectionMatrix[5];
+
+var uma = 1-alpha;
+if (alpha>=0 && alpha<=1)
+        {
+        var c0 = uma*uma*uma;
+        var c1 = 3*uma*uma*alpha;
+        var c2 = 3*uma*alpha*alpha;
+        var c3 = alpha*alpha*alpha;
+        var cx=[0,0,0,0];
+        var cy=[0,-0.10,-0.2,-0.3];
+        var cz=[0,0,0,0];
+//translation matrix
+        var MT = utils.MakeTranslateMatrix(cx[0]*c0 + cx[1]*c1 + cx[2]*c2 + cx[3]*c3,
+                                            cy[0]*c0 + cy[1]*c1 + cy[2]*c2 + cy[3]*c3,
+                                            cz[0]*c0 + cz[1]*c1 + cz[2]*c2 + cz[3]*c3);
+
+
+worldViewProjectionMatrix[5]=utils.multiplyMatrices(worldViewProjectionMatrix[5],MT);
+
+
+ }else{
+ worldViewProjectionMatrix[5]=utils.multiplyMatrices(mat,utils.MakeTranslateMatrix(0,-0.28,0));
+}
+}
+function turnDownLever3(deltaT){
+
+alpha=deltaT;
+
+var uma = 1-alpha;
+if (alpha>=0 && alpha<=1)
+        {
+        var c0 = uma*uma*uma;
+        var c1 = 3*uma*uma*alpha;
+        var c2 = 3*uma*alpha*alpha;
+        var c3 = alpha*alpha*alpha;
+        var cx=[0,0,0,0];
+        var cy=[0,0,0,0];
+        var cz=[-0.001,-0.0025,-0.002,-0.0025];
+//translation matrix
+        var MT = utils.MakeTranslateMatrix(cx[0]*c0 + cx[1]*c1 + cx[2]*c2 + cx[3]*c3,
+                                            cy[0]*c0 + cy[1]*c1 + cy[2]*c2 + cy[3]*c3,
+                                            cz[0]*c0 + cz[1]*c1 + cz[2]*c2 + cz[3]*c3);
+
+
+//90
+var MS=utils.multiplyMatrices(MT,utils.MakeRotateXMatrix(90));
+worldViewProjectionMatrix[2]=utils.multiplyMatrices(MS,worldViewProjectionMatrix[2]);
+}
+
+}
+//DOOR 1
+function animate1(deltaT){
+alpha=deltaT/2;
+var mat=worldViewProjectionMatrix[6];
+
+var uma = 1-alpha;
+if (alpha>=0 && alpha<=1)
+        {
+        var c0 = uma*uma*uma;
+        var c1 = 3*uma*uma*alpha;
+        var c2 = 3*uma*alpha*alpha;
+        var c3 = alpha*alpha*alpha;
+        var cx=[0,0,0,0];
+        var cy=[0,-0.10,-0.2,-0.3];
+        var cz=[0,0,0,0];
+//translation matrix
+        var MT = utils.MakeTranslateMatrix(cx[0]*c0 + cx[1]*c1 + cx[2]*c2 + cx[3]*c3,
+                                            cy[0]*c0 + cy[1]*c1 + cy[2]*c2 + cy[3]*c3,
+                                            cz[0]*c0 + cz[1]*c1 + cz[2]*c2 + cz[3]*c3);
+
+
+worldViewProjectionMatrix[6]=utils.multiplyMatrices(worldViewProjectionMatrix[6],MT);
+
+
+ }else{
+ worldViewProjectionMatrix[6]=utils.multiplyMatrices(mat,utils.MakeTranslateMatrix(0,-0.28,0));
+}
+}
+
+function turnDownLever1(deltaT){
+
+alpha=deltaT;
+
+var uma = 1-alpha;
+
+if (alpha>=0 && alpha<=1)
+        {
+        var c0 = uma*uma*uma;
+        var c1 = 3*uma*uma*alpha;
+        var c2 = 3*uma*alpha*alpha;
+        var c3 = alpha*alpha*alpha;
+        var cx=[0,0,0,0];
+        var cy=[0,0,0,0];
+        var cz=[-0.001,-0.0025,-0.002,-0.0025];
+//translation matrix
+        var MT = utils.MakeTranslateMatrix(cx[0]*c0 + cx[1]*c1 + cx[2]*c2 + cx[3]*c3,
+                                            cy[0]*c0 + cy[1]*c1 + cy[2]*c2 + cy[3]*c3,
+                                            cz[0]*c0 + cz[1]*c1 + cz[2]*c2 + cz[3]*c3);
+
+
+
+var MS=utils.multiplyMatrices(MT,utils.MakeRotateXMatrix(180));
+worldViewProjectionMatrix[1]=utils.multiplyMatrices(MS,worldViewProjectionMatrix[1]);
+}
+}
 
 function drawScene(){
 
@@ -838,17 +979,74 @@ function drawScene(){
 
 //activate door 5
         if(door5Open==true){
-            var currentTime = (new Date).getTime();
-            var deltaT;
-            if(lastUpdateTime){
-                deltaT = (currentTime - lastUpdateTime) / 1000.0;
-            } else {
-                deltaT = 1/50;
-            }
-            lastUpdateTime = currentTime;
-            g_time += deltaT;
-            animate(g_time);
+        var currentTime = (new Date).getTime();
+        var deltaT;
+        if(lastUpdateTime){
+            deltaT = (currentTime - lastUpdateTime) / 1000.0;
+        } else {
+            deltaT = 1/50;
         }
+        lastUpdateTime = currentTime;
+        g_time += deltaT;
+        animate5(g_time);
+
+        turnDownLever5(g_time);
+
+        }
+
+ //activate door 3
+ if(door3Open==true){
+
+         var currentTime2 = (new Date).getTime();
+        var deltaT2;
+        if(lastUpdateTime2){
+            deltaT2 = (currentTime2 - lastUpdateTime2) / 1000.0;
+        } else {
+            deltaT2 = 1/50;
+        }
+        lastUpdateTime2 = currentTime2;
+        g_time2 += deltaT2;
+       animate3(g_time2);
+       turnDownLever3(g_time2);
+
+}
+
+//activate door 1
+if(door1Open==true){
+        var currentTime3 = (new Date).getTime();
+        var deltaT3;
+        if(lastUpdateTime3){
+            deltaT3 = (currentTime3 - lastUpdateTime3) / 1000.0;
+        } else {
+            deltaT3 = 1/50;
+        }
+        lastUpdateTime3 = currentTime3;
+        g_time3 += deltaT3;
+        animate1(g_time3);
+       turnDownLever1(g_time3);
+}
+
+//turn down the lever 5
+if (cx==4 && cz==-1 && (angle>15  && angle< 40)){
+lever5=true;
+
+}
+
+
+
+if (cx==9 && cz==4 ){
+
+
+lever3=true;
+
+}
+
+if (cx==2 && cz==3){
+lever1=true;
+
+
+}
+
 
         gl.disableVertexAttribArray(vertexPositionHandle[currentShader]);
         gl.disableVertexAttribArray(vertexNormalHandle[currentShader]);
