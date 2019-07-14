@@ -448,14 +448,22 @@ function loadModel(modelName){
 
 
     });
-
-
 }
 
 /**
  * //todo fix this
  */
 function initInteraction(){
+
+    canvas.requestPointerLock = canvas.requestPointerLock ||
+        canvas.mozRequestPointerLock;
+
+    document.exitPointerLock = document.exitPointerLock ||
+        document.mozExitPointerLock;
+
+    canvas.onclick = function() {
+        canvas.requestPointerLock();
+    };
 
     var keyFunction =function(e) {
 
@@ -526,14 +534,25 @@ function initInteraction(){
                 cz+=delta;
             }
         }
-        if (e.keyCode == 87) {	// w
+        if (e.keyCode === 87) {	// w
             //if(moveLight == 0)elevation+=delta * 10.0;
             //else{
             //	lightDirection[0] += 0.1 * Math.sin(utils.degToRad(angle));
 
             //	lightDirection[2] -= 0.1 * Math.cos(utils.degToRad(angle));
-            if (dungeonMap[9+cz][cx+6+delta]!="1"){
-                cy+=delta;
+            if(angle > -45.0 && angle <= 45.0) {                       // Looking forward.
+                if (dungeonMap[9 + cz + delta][cx + 6] != "1") {
+                    cz += delta;
+                }
+            }
+            else if(angle > 45.0 && angle <= 135.0) {                   // Looking left.
+
+            }
+            else if(angle > 135.0 && angle <= -135.0) {                 // Looking backward.
+
+            }
+            else if(angle > -135.0 && angle <= -45.0) {                 // Looking right.
+
             }
         }
 
@@ -547,15 +566,9 @@ function initInteraction(){
             }
             //else lightPosition[2] +=delta;
         }
+    };
 
-
-
-
-
-
-    }
-
-    var mouseState = false;
+    /*var mouseState = false;
     var lastMouseX = -100, lastMouseY = -100;
     function doMouseDown(event) {
         lastMouseX = event.pageX;
@@ -585,28 +598,87 @@ function initInteraction(){
                 if (elevation>35){
                     elevation=35};
 
-            }
+                }
             if (elevation<-35){
                 elevation=-35}
 
 
         }
+    }*/
+
+    /**
+     * This function checks the pointLockElement property to see if it is our canvas.
+     * If so, it attached an event listener to handle the mouse movements with the updatePosition() function.
+     * If not, it removes the event listener again.
+     */
+    function lockChangeAlert() {
+        if (document.pointerLockElement === canvas ||
+            document.mozPointerLockElement === canvas) {
+            console.log('The pointer lock status is now locked');
+            document.addEventListener("mousemove", updatePosition, false);
+        } else {
+            console.log('The pointer lock status is now unlocked');
+            document.removeEventListener("mousemove", updatePosition, false);
+        }
+    }
+
+    /**
+     * This functions updates the angle and the elevation of the camera with respect to the movement of the mouse.
+     * @param e Event representing the movement of the mouse.
+     */
+    function updatePosition(e) {
+        let mouseSensitivity = 0.1;
+        let angleTemp = angle - e.movementX * mouseSensitivity;
+        (angleTemp <= -360.0 || angleTemp >= 360.0) ? angleTemp = 0.0 : angleTemp; // Reset the angle if it goes beyond its limits.
+        let elevationTemp = elevation - e.movementY * mouseSensitivity;
+
+        // Angle goes from 0 to 180 counter-clockwise and from 0 to -180 clockwise.
+        if(angleTemp > 180) {
+            angle = angleTemp - 360.0;
+        }
+        else if(angleTemp <= -180) {
+            angle = angleTemp + 360.0;
+        }
+        else {
+            angle = angleTemp;
+        }
+
+        // Vertical movement is limited.
+        if(elevationTemp >= 90) {
+            elevation = 90;
+        }
+        else if (elevationTemp <= -90) {
+            elevation = -90;
+        }
+        else {
+            elevation = elevationTemp;
+        }
+        console.log("X: " + e.movementY + ", Y: " + e.movementY + " \nAngle: " + angle + ", Elevation: " + elevation);
     }
 
 
-//function clickOnLever(event){
-//console.log("cliccato");
+    //function clickOnLever(event){
+    //console.log("cliccato");
 //}
+
+    // Mouse movement handled with pointer lock.
+
 
     //'window' is a JavaScript object (if "canvas", it will not work). todo
     window.addEventListener("keyup", keyFunction, false);
-    canvas.addEventListener("mousedown", doMouseDown, false);
+    /*canvas.addEventListener("mousedown", doMouseDown, false);
     canvas.addEventListener("mouseup", doMouseUp, false);
-    canvas.addEventListener("mousemove", doMouseMove, false);
-//	canvas.addEventListener("click",clickOnLever,false);
+    canvas.addEventListener("mousemove", doMouseMove, false);*/
 
-//activate to have resize
-//	window.onresize = doResize();
+    //	canvas.addEventListener("click",clickOnLever,false);
+
+    //activate to have resize
+    //	window.onresize = doResize();
+
+    // Pointer lock event listener.
+    // Hook pointer lock state change events for different browsers
+    document.addEventListener('pointerlockchange', lockChangeAlert, false);
+    document.addEventListener('mozpointerlockchange', lockChangeAlert, false);
 }
 
 /**
