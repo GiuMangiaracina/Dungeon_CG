@@ -769,7 +769,7 @@ if (alpha>=0 && alpha<=1)
         var c3 = alpha*alpha*alpha;
         var cx=[0,0,0,0];
         var cy=[0,0,0,0];
-        var cz=[-0.001,-0.0025,-0.002,-0.0025];
+        var cz=[0,0,0,0];
 //translation matrix
         var MT = utils.MakeTranslateMatrix(cx[0]*c0 + cx[1]*c1 + cx[2]*c2 + cx[3]*c3,
                                             cy[0]*c0 + cy[1]*c1 + cy[2]*c2 + cy[3]*c3,
@@ -1027,21 +1027,21 @@ if(door1Open==true){
 }
 
 //turn down the lever 5
-if (cx==4 && cz==-1 && (angle>15  && angle< 40)){
+if (cx==3 && cz==-1 && (angle>15  && angle< 40)){
 lever5=true;
 
 }
 
 
 
-if (cx==9 && cz==4 ){
+if (cx==8 && cz==4 ){
 
 
 lever3=true;
 
 }
 
-if (cx==2 && cz==3){
+if (cx==2 && cz==2){
 lever1=true;
 
 
