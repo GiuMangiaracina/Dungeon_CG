@@ -73,6 +73,7 @@ var diffuseTextureObj = [];					// Texture material.
 var nTexture 		= [];						// Number of textures per object.
 
 // Parameters for Camera: look-in camera.
+// N.B.: the camera points toward negative z axis at the beginning.
 var cx = 0;
 var cy = 0.5;
 var cz = 0;
@@ -481,9 +482,16 @@ function initInteraction(){
     };
 
     var keyFunction =function(e) {
+        let mapStartingPointX = 6;
+        let mapStartingPointZ = 9;
+
+        // Condition regarding the position in front of or behind an open door.
+        let doorIsOpen = ((((cx === 3 || cx === 5) && cz === 3) && door1Open === true) ||
+                             ((cx === 9 && (cz === 2 || cz === 4)) && door3Open === true) ||
+                             ((cx === 4 && (cz === -3 || cz === -1)) && door5Open === true));
 
         //to activate animation on door 5
-        if (e.keyCode == 107) {	// Add
+        if (e.keyCode === 107) {	// Add
             //	if(moveLight == 0)  cx+=delta;
 
             //	else lightPosition[1] +=delta;
@@ -492,27 +500,10 @@ function initInteraction(){
         }
 
         //to get the actual position
-        if (e.keyCode == 109) {	// Subtract
+        if (e.keyCode === 109) {	// Subtract
 
             console.log(" actual position:(cx:"+(cx) + "/" + "cy: "+ cy + "/" +"cz: "+ (cz) + ") - "+ elevation + "." + angle);
             console.log(" map position:(cx:"+(cx+6) + "/" + "cy: "+ cy + "/" +"cz: "+ (cz+9) + ") - "+ elevation + "." + angle);
-        }
-
-        if (e.keyCode == 65) {	// a
-            //cy += delta;
-            if ((dungeonMap[cz+9-delta][cx+6]!="1" && dungeonMap[cz+9-delta][cx+6]!="2")||((cx==4 && cz==-1) && door5Open==true)||((cx==9 &&cz==4)&& door3Open==true)  ) {
-               cz-=delta;
-
-            }
-        }
-        if (e.keyCode == 68) {	// d
-            //if(moveLight == 0)angle+=delta * 1.0;
-            //else{
-            //	lightDirection[0] += 0.1 * Math.cos(utils.degToRad(angle));
-            //	lightDirection[2] += 0.1 * Math.sin(utils.degToRad(angle));
-            if ((dungeonMap[cz+9+delta][cx+6]!="1" && dungeonMap[cz+9+delta][cx+6]!="2")||((cx==4 && cz==-3) && door5Open==true )||((cx==9 &&cz==4)&&door3Open==true)||(cx==9 && cz==2 && door3Open==true)){
-               cz+=delta;
-            }
         }
 
         if (e.keyCode === 87) {	// w
@@ -521,32 +512,62 @@ function initInteraction(){
             //	lightDirection[0] += 0.1 * Math.sin(utils.degToRad(angle));
 
             //	lightDirection[2] -= 0.1 * Math.cos(utils.degToRad(angle));
-          if ((dungeonMap[9+cz][cx+6+delta]!="1"&& dungeonMap[9+cz][cx+6+delta]!="2")||((cx==4 && cz==-3) && door5Open==true )||(cx==3&& cz==3 && door1Open==true)){
-                             cx+=delta;
-                                                        }
-            if(angle > -45.0 && angle <= 45.0) {                       // Looking forward.
-                if (dungeonMap[9 + cz + delta][cx + 6] != "1") {
-                    cz += delta;
+            if(angle > -45.0 && angle <= 45.0) {                        // Looking forward.
+                // The conditions are about the presence of a wall or of a closed/open door (from both sides).
+                if ((dungeonMap[cz + mapStartingPointZ - delta][cx + mapStartingPointX] !== 1 &&
+                    dungeonMap[cz + mapStartingPointZ - delta][cx + mapStartingPointX] !== 2) || doorIsOpen) {
+
+                    cz -= delta;
                 }
             }
             else if(angle > 45.0 && angle <= 135.0) {                   // Looking left.
+                if ((dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX - delta] !== 1 &&
+                    dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX - delta] !== 2) || doorIsOpen) {
 
+                    cx -= delta;
+                }
             }
-            else if(angle > 135.0 && angle <= -135.0) {                 // Looking backward.
+            else if((angle > 135.0 && angle <= 180.0) || (angle > -180.0 && angle <= -135.0)) {                 // Looking backward.
+                let positionDebug = dungeonMap[cz + mapStartingPointZ + delta][cx + mapStartingPointX];
+                if ((dungeonMap[cz + mapStartingPointZ + delta][cx + mapStartingPointX] !== 1 &&
+                    dungeonMap[cz + mapStartingPointZ + delta][cx + mapStartingPointX] !== 2) || doorIsOpen) {
 
+                    cz += delta;
+                }
             }
             else if(angle > -135.0 && angle <= -45.0) {                 // Looking right.
+                if ((dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX + delta] !== 1 &&
+                    dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX + delta] !== 2) || doorIsOpen) {
 
+                    cx += delta;
+                }
             }
         }
 
-        if (e.keyCode == 83) {	// s
+        if (e.keyCode === 65) {	// a
+            //cy += delta;
+            if ((dungeonMap[cz + mapStartingPointZ - delta][cx + mapStartingPointX] !== 1 && dungeonMap[cz + mapStartingPointZ - delta][cx + mapStartingPointX] !== 2)||((cx === 4 && cz === -1) && door5Open === true)||((cx === 9 && cz === 4) && door3Open === true)) {
+               cz -= delta;
+
+            }
+        }
+        if (e.keyCode === 68) {	// d
+            //if(moveLight == 0)angle+=delta * 1.0;
+            //else{
+            //	lightDirection[0] += 0.1 * Math.cos(utils.degToRad(angle));
+            //	lightDirection[2] += 0.1 * Math.sin(utils.degToRad(angle));
+            if ((dungeonMap[cz + mapStartingPointZ + delta][cx + mapStartingPointX] !== 1 && dungeonMap[cz + mapStartingPointZ + delta][cx + mapStartingPointX] !== 2)||((cx === 4 && cz === -3) && door5Open === true )||((cx === 9 && cz === 4) && door3Open === true)||(cx === 9 && cz === 2 && door3Open === true)) {
+               cz += delta;
+            }
+        }
+
+        if (e.keyCode === 83) {	// s
             //if(moveLight == 0)elevation-=delta*10.0;
             //else{
             //	lightDirection[0] -= 0.1 * Math.sin(utils.degToRad(angle));
             //	lightDirection[2] += 0.1 * Math.cos(utils.degToRad(angle));
-          if ((dungeonMap[9+cz][cx+6-delta]!="1"&& dungeonMap[9+cz][cx+6-delta]!="2")||(cx==5&&cz==3&&door1Open==true)) {
-                     cx-=delta;
+          if ((dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX - delta] !== 1 && dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX - delta] !== 2)||(cx === 5 && cz === 3 && door1Open === true)) {
+                     cx -= delta;
                                                                     }
             //else lightPosition[2] +=delta;
         }
@@ -563,7 +584,6 @@ function initInteraction(){
             else if(lever1 === true && door1Open === false){
                 door1Open = true;
             }
-
         }
     };
 
@@ -629,7 +649,7 @@ function initInteraction(){
      * @param e Event representing the movement of the mouse.
      */
     function updatePosition(e) {
-        let mouseSensitivity = 0.1;
+        let mouseSensitivity = 0.05;
         let angleTemp = angle - e.movementX * mouseSensitivity;
         (angleTemp <= -360.0 || angleTemp >= 360.0) ? angleTemp = 0.0 : angleTemp; // Reset the angle if it goes beyond its limits.
         let elevationTemp = elevation - e.movementY * mouseSensitivity;
@@ -726,174 +746,167 @@ function doResize() {
  * //todo comment
  */
 //function to animate door 5; it is an implementation o Bezier interpolation
-function animate5(deltaT){
-    alpha=deltaT/2;
-    var mat=worldViewProjectionMatrix[4];
+function animate5(deltaT) {
+    alpha = deltaT / 2;
+    var mat = worldViewProjectionMatrix[4];
 
-    var uma = 1-alpha;
-    if (alpha>=0 && alpha<=1) {
-        var c0 = uma*uma*uma;
-        var c1 = 3*uma*uma*alpha;
-        var c2 = 3*uma*alpha*alpha;
-        var c3 = alpha*alpha*alpha;
-        var cx=[0,0,0,0];
-        var cy=[0,-0.10,-0.2,-0.3];
-        var cz=[0,0,0,0];
-//translation matrix
-        var MT = utils.MakeTranslateMatrix(cx[0]*c0 + cx[1]*c1 + cx[2]*c2 + cx[3]*c3,
-                                            cy[0]*c0 + cy[1]*c1 + cy[2]*c2 + cy[3]*c3,
-                                            cz[0]*c0 + cz[1]*c1 + cz[2]*c2 + cz[3]*c3);
-
-
-worldViewProjectionMatrix[4]=utils.multiplyMatrices(worldViewProjectionMatrix[4],MT);
+    var uma = 1 - alpha;
+    if (alpha >= 0 && alpha <= 1) {
+        var c0 = uma * uma * uma;
+        var c1 = 3 * uma * uma * alpha;
+        var c2 = 3 * uma * alpha * alpha;
+        var c3 = alpha * alpha * alpha;
+        var cx = [0, 0, 0, 0];
+        var cy = [0, -0.10, -0.2, -0.3];
+        var cz = [0, 0, 0, 0];
+        //translation matrix
+        var MT = utils.MakeTranslateMatrix(cx[0] * c0 + cx[1] * c1 + cx[2] * c2 + cx[3] * c3,
+            cy[0] * c0 + cy[1] * c1 + cy[2] * c2 + cy[3] * c3,
+            cz[0] * c0 + cz[1] * c1 + cz[2] * c2 + cz[3] * c3);
 
 
- }else{
- worldViewProjectionMatrix[4]=utils.multiplyMatrices(mat,utils.MakeTranslateMatrix(0,-0.28,0));
+        worldViewProjectionMatrix[4] = utils.multiplyMatrices(worldViewProjectionMatrix[4], MT);
+
+
+    } else {
+        worldViewProjectionMatrix[4] = utils.multiplyMatrices(mat, utils.MakeTranslateMatrix(0, -0.28, 0));
+    }
 }
-}
 
 
 
 
-function turnDownLever5(deltaT){
+function turnDownLever5(deltaT) {
 
-alpha=deltaT;
+    alpha = deltaT;
 
-var uma = 1-alpha;
-if (alpha>=0 && alpha<=1)
-        {
-        var c0 = uma*uma*uma;
-        var c1 = 3*uma*uma*alpha;
-        var c2 = 3*uma*alpha*alpha;
-        var c3 = alpha*alpha*alpha;
-        var cx=[0,0,0,0];
-        var cy=[0,0,0,0];
-        var cz=[0,0,0,0];
-//translation matrix
-        var MT = utils.MakeTranslateMatrix(cx[0]*c0 + cx[1]*c1 + cx[2]*c2 + cx[3]*c3,
-                                            cy[0]*c0 + cy[1]*c1 + cy[2]*c2 + cy[3]*c3,
-                                            cz[0]*c0 + cz[1]*c1 + cz[2]*c2 + cz[3]*c3);
-
+    var uma = 1 - alpha;
+    if (alpha >= 0 && alpha <= 1) {
+        var c0 = uma * uma * uma;
+        var c1 = 3 * uma * uma * alpha;
+        var c2 = 3 * uma * alpha * alpha;
+        var c3 = alpha * alpha * alpha;
+        var cx = [0, 0, 0, 0];
+        var cy = [0, 0, 0, 0];
+        var cz = [0, 0, 0, 0];
+        //translation matrix
+        var MT = utils.MakeTranslateMatrix(cx[0] * c0 + cx[1] * c1 + cx[2] * c2 + cx[3] * c3,
+            cy[0] * c0 + cy[1] * c1 + cy[2] * c2 + cy[3] * c3,
+            cz[0] * c0 + cz[1] * c1 + cz[2] * c2 + cz[3] * c3);
 
 
-var MS=utils.multiplyMatrices(MT,utils.MakeRotateXMatrix(180));
+        var MS = utils.multiplyMatrices(MT, utils.MakeRotateXMatrix(180));
 
-worldViewProjectionMatrix[3]=utils.multiplyMatrices(MS,worldViewProjectionMatrix[3]);
-}
+        worldViewProjectionMatrix[3] = utils.multiplyMatrices(MS, worldViewProjectionMatrix[3]);
+    }
 
 }
 
- function animate3(deltaT){
-alpha=deltaT/2;
-var mat=worldViewProjectionMatrix[5];
+function animate3(deltaT) {
+    alpha = deltaT / 2;
+    var mat = worldViewProjectionMatrix[5];
 
-var uma = 1-alpha;
-if (alpha>=0 && alpha<=1)
-        {
-        var c0 = uma*uma*uma;
-        var c1 = 3*uma*uma*alpha;
-        var c2 = 3*uma*alpha*alpha;
-        var c3 = alpha*alpha*alpha;
-        var cx=[0,0,0,0];
-        var cy=[0,-0.10,-0.2,-0.3];
-        var cz=[0,0,0,0];
-//translation matrix
-        var MT = utils.MakeTranslateMatrix(cx[0]*c0 + cx[1]*c1 + cx[2]*c2 + cx[3]*c3,
-                                            cy[0]*c0 + cy[1]*c1 + cy[2]*c2 + cy[3]*c3,
-                                            cz[0]*c0 + cz[1]*c1 + cz[2]*c2 + cz[3]*c3);
-
-
-worldViewProjectionMatrix[5]=utils.multiplyMatrices(worldViewProjectionMatrix[5],MT);
+    var uma = 1 - alpha;
+    if (alpha >= 0 && alpha <= 1) {
+        var c0 = uma * uma * uma;
+        var c1 = 3 * uma * uma * alpha;
+        var c2 = 3 * uma * alpha * alpha;
+        var c3 = alpha * alpha * alpha;
+        var cx = [0, 0, 0, 0];
+        var cy = [0, -0.10, -0.2, -0.3];
+        var cz = [0, 0, 0, 0];
+        //translation matrix
+        var MT = utils.MakeTranslateMatrix(cx[0] * c0 + cx[1] * c1 + cx[2] * c2 + cx[3] * c3,
+            cy[0] * c0 + cy[1] * c1 + cy[2] * c2 + cy[3] * c3,
+            cz[0] * c0 + cz[1] * c1 + cz[2] * c2 + cz[3] * c3);
 
 
- }else{
- worldViewProjectionMatrix[5]=utils.multiplyMatrices(mat,utils.MakeTranslateMatrix(0,-0.28,0));
+        worldViewProjectionMatrix[5] = utils.multiplyMatrices(worldViewProjectionMatrix[5], MT);
+
+
+    } else {
+        worldViewProjectionMatrix[5] = utils.multiplyMatrices(mat, utils.MakeTranslateMatrix(0, -0.28, 0));
+    }
 }
+function turnDownLever3(deltaT) {
+
+    alpha = deltaT;
+
+    var uma = 1 - alpha;
+    if (alpha >= 0 && alpha <= 1) {
+        var c0 = uma * uma * uma;
+        var c1 = 3 * uma * uma * alpha;
+        var c2 = 3 * uma * alpha * alpha;
+        var c3 = alpha * alpha * alpha;
+        var cx = [0, 0, 0, 0];
+        var cy = [0, 0, 0, 0];
+        var cz = [-0.001, -0.0025, -0.002, -0.0025];
+        //translation matrix
+        var MT = utils.MakeTranslateMatrix(cx[0] * c0 + cx[1] * c1 + cx[2] * c2 + cx[3] * c3,
+            cy[0] * c0 + cy[1] * c1 + cy[2] * c2 + cy[3] * c3,
+            cz[0] * c0 + cz[1] * c1 + cz[2] * c2 + cz[3] * c3);
+
+
+        //90
+        var MS = utils.multiplyMatrices(MT, utils.MakeRotateXMatrix(90));
+        worldViewProjectionMatrix[2] = utils.multiplyMatrices(MS, worldViewProjectionMatrix[2]);
+    }
 }
-function turnDownLever3(deltaT){
 
-alpha=deltaT;
-
-var uma = 1-alpha;
-if (alpha>=0 && alpha<=1)
-        {
-        var c0 = uma*uma*uma;
-        var c1 = 3*uma*uma*alpha;
-        var c2 = 3*uma*alpha*alpha;
-        var c3 = alpha*alpha*alpha;
-        var cx=[0,0,0,0];
-        var cy=[0,0,0,0];
-        var cz=[-0.001,-0.0025,-0.002,-0.0025];
-//translation matrix
-        var MT = utils.MakeTranslateMatrix(cx[0]*c0 + cx[1]*c1 + cx[2]*c2 + cx[3]*c3,
-                                            cy[0]*c0 + cy[1]*c1 + cy[2]*c2 + cy[3]*c3,
-                                            cz[0]*c0 + cz[1]*c1 + cz[2]*c2 + cz[3]*c3);
-
-
-//90
-var MS=utils.multiplyMatrices(MT,utils.MakeRotateXMatrix(90));
-worldViewProjectionMatrix[2]=utils.multiplyMatrices(MS,worldViewProjectionMatrix[2]);
-}
-
-}
 //DOOR 1
-function animate1(deltaT){
-alpha=deltaT/2;
-var mat=worldViewProjectionMatrix[6];
+function animate1(deltaT) {
+    alpha = deltaT / 2;
+    var mat = worldViewProjectionMatrix[6];
 
-var uma = 1-alpha;
-if (alpha>=0 && alpha<=1)
-        {
-        var c0 = uma*uma*uma;
-        var c1 = 3*uma*uma*alpha;
-        var c2 = 3*uma*alpha*alpha;
-        var c3 = alpha*alpha*alpha;
-        var cx=[0,0,0,0];
-        var cy=[0,-0.10,-0.2,-0.3];
-        var cz=[0,0,0,0];
-//translation matrix
-        var MT = utils.MakeTranslateMatrix(cx[0]*c0 + cx[1]*c1 + cx[2]*c2 + cx[3]*c3,
-                                            cy[0]*c0 + cy[1]*c1 + cy[2]*c2 + cy[3]*c3,
-                                            cz[0]*c0 + cz[1]*c1 + cz[2]*c2 + cz[3]*c3);
-
-
-worldViewProjectionMatrix[6]=utils.multiplyMatrices(worldViewProjectionMatrix[6],MT);
+    var uma = 1 - alpha;
+    if (alpha >= 0 && alpha <= 1) {
+        var c0 = uma * uma * uma;
+        var c1 = 3 * uma * uma * alpha;
+        var c2 = 3 * uma * alpha * alpha;
+        var c3 = alpha * alpha * alpha;
+        var cx = [0, 0, 0, 0];
+        var cy = [0, -0.10, -0.2, -0.3];
+        var cz = [0, 0, 0, 0];
+        //translation matrix
+        var MT = utils.MakeTranslateMatrix(cx[0] * c0 + cx[1] * c1 + cx[2] * c2 + cx[3] * c3,
+            cy[0] * c0 + cy[1] * c1 + cy[2] * c2 + cy[3] * c3,
+            cz[0] * c0 + cz[1] * c1 + cz[2] * c2 + cz[3] * c3);
 
 
- }else{
- worldViewProjectionMatrix[6]=utils.multiplyMatrices(mat,utils.MakeTranslateMatrix(0,-0.28,0));
-}
-}
-
-function turnDownLever1(deltaT){
-
-alpha=deltaT;
-
-var uma = 1-alpha;
-
-if (alpha>=0 && alpha<=1)
-        {
-        var c0 = uma*uma*uma;
-        var c1 = 3*uma*uma*alpha;
-        var c2 = 3*uma*alpha*alpha;
-        var c3 = alpha*alpha*alpha;
-        var cx=[0,0,0,0];
-        var cy=[0,0,0,0];
-        var cz=[-0.001,-0.0025,-0.002,-0.0025];
-//translation matrix
-        var MT = utils.MakeTranslateMatrix(cx[0]*c0 + cx[1]*c1 + cx[2]*c2 + cx[3]*c3,
-                                            cy[0]*c0 + cy[1]*c1 + cy[2]*c2 + cy[3]*c3,
-                                            cz[0]*c0 + cz[1]*c1 + cz[2]*c2 + cz[3]*c3);
+        worldViewProjectionMatrix[6] = utils.multiplyMatrices(worldViewProjectionMatrix[6], MT);
 
 
-
-var MS=utils.multiplyMatrices(MT,utils.MakeRotateXMatrix(180));
-worldViewProjectionMatrix[1]=utils.multiplyMatrices(MS,worldViewProjectionMatrix[1]);
-}
+    } else {
+        worldViewProjectionMatrix[6] = utils.multiplyMatrices(mat, utils.MakeTranslateMatrix(0, -0.28, 0));
+    }
 }
 
-function drawScene(){
+function turnDownLever1(deltaT) {
+
+    alpha = deltaT;
+
+    var uma = 1 - alpha;
+
+    if (alpha >= 0 && alpha <= 1) {
+        var c0 = uma * uma * uma;
+        var c1 = 3 * uma * uma * alpha;
+        var c2 = 3 * uma * alpha * alpha;
+        var c3 = alpha * alpha * alpha;
+        var cx = [0, 0, 0, 0];
+        var cy = [0, 0, 0, 0];
+        var cz = [-0.001, -0.0025, -0.002, -0.0025];
+        //translation matrix
+        var MT = utils.MakeTranslateMatrix(cx[0] * c0 + cx[1] * c1 + cx[2] * c2 + cx[3] * c3,
+            cy[0] * c0 + cy[1] * c1 + cy[2] * c2 + cy[3] * c3,
+            cz[0] * c0 + cz[1] * c1 + cz[2] * c2 + cz[3] * c3);
+
+
+        var MS = utils.multiplyMatrices(MT, utils.MakeRotateXMatrix(180));
+        worldViewProjectionMatrix[1] = utils.multiplyMatrices(MS, worldViewProjectionMatrix[1]);
+    }
+}
+
+function drawScene() {
 
     computeMatrices();
 
@@ -902,7 +915,7 @@ function drawScene(){
     // Load the desired shader program: 0 -> Gouraud shading, 1 -> Phong shading.
     gl.useProgram(shaderProgram[currentShader]);
 
-    for(let i = 0; i < sceneObjects; i++){
+    for (let i = 0; i < sceneObjects; i++) {
 
         /***** UNIFORMS *****/
         // Transform matrices.
@@ -977,75 +990,74 @@ function drawScene(){
         gl.drawElements(gl.TRIANGLES, facesNumber[i] * 3, gl.UNSIGNED_SHORT, 0);
 
 
-//activate door 5
-        if(door5Open==true){
-        var currentTime = (new Date).getTime();
-        var deltaT;
-        if(lastUpdateTime){
-            deltaT = (currentTime - lastUpdateTime) / 1000.0;
-        } else {
-            deltaT = 1/50;
+        //activate door 5
+        if (door5Open == true) {
+            var currentTime = (new Date).getTime();
+            var deltaT;
+            if (lastUpdateTime) {
+                deltaT = (currentTime - lastUpdateTime) / 1000.0;
+            } else {
+                deltaT = 1 / 50;
+            }
+            lastUpdateTime = currentTime;
+            g_time += deltaT;
+            animate5(g_time);
+
+            turnDownLever5(g_time);
+
         }
-        lastUpdateTime = currentTime;
-        g_time += deltaT;
-        animate5(g_time);
 
-        turnDownLever5(g_time);
+        //activate door 3
+        if (door3Open == true) {
+
+            var currentTime2 = (new Date).getTime();
+            var deltaT2;
+            if (lastUpdateTime2) {
+                deltaT2 = (currentTime2 - lastUpdateTime2) / 1000.0;
+            } else {
+                deltaT2 = 1 / 50;
+            }
+            lastUpdateTime2 = currentTime2;
+            g_time2 += deltaT2;
+            animate3(g_time2);
+            turnDownLever3(g_time2);
 
         }
 
- //activate door 3
- if(door3Open==true){
-
-         var currentTime2 = (new Date).getTime();
-        var deltaT2;
-        if(lastUpdateTime2){
-            deltaT2 = (currentTime2 - lastUpdateTime2) / 1000.0;
-        } else {
-            deltaT2 = 1/50;
+        //activate door 1
+        if (door1Open == true) {
+            var currentTime3 = (new Date).getTime();
+            var deltaT3;
+            if (lastUpdateTime3) {
+                deltaT3 = (currentTime3 - lastUpdateTime3) / 1000.0;
+            } else {
+                deltaT3 = 1 / 50;
+            }
+            lastUpdateTime3 = currentTime3;
+            g_time3 += deltaT3;
+            animate1(g_time3);
+            turnDownLever1(g_time3);
         }
-        lastUpdateTime2 = currentTime2;
-        g_time2 += deltaT2;
-       animate3(g_time2);
-       turnDownLever3(g_time2);
 
-}
+        //turn down the lever 5
+        if (cx === 3 && cz === -1 && (angle > 45.0 && angle < 135.0)) {
+            lever5 = true;
 
-//activate door 1
-if(door1Open==true){
-        var currentTime3 = (new Date).getTime();
-        var deltaT3;
-        if(lastUpdateTime3){
-            deltaT3 = (currentTime3 - lastUpdateTime3) / 1000.0;
-        } else {
-            deltaT3 = 1/50;
         }
-        lastUpdateTime3 = currentTime3;
-        g_time3 += deltaT3;
-        animate1(g_time3);
-       turnDownLever1(g_time3);
-}
-
-//turn down the lever 5
-if (cx==3 && cz==-1 && (angle>15  && angle< 40)){
-lever5=true;
-
-}
 
 
-
-if (cx==8 && cz==4 ){
-
-
-lever3=true;
-
-}
-
-if (cx==2 && cz==2){
-lever1=true;
+        if (cx === 8 && cz === 4) {
 
 
-}
+            lever3 = true;
+
+        }
+
+        if (cx === 2 && cz === 2) {
+            lever1 = true;
+
+
+        }
 
 
         gl.disableVertexAttribArray(vertexPositionHandle[currentShader]);
