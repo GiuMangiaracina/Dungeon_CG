@@ -47,9 +47,15 @@ var lightDirection = [Math.cos(dirLightAlpha) * Math.cos(dirLightBeta),
     Math.sin(dirLightAlpha),
     Math.cos(dirLightAlpha) * Math.sin(dirLightBeta),
 ];
-var lightPosition = [0.0, 5.0, 0.0, 1.0];
+var lightPosition = [0.0, 0.5, 0.0, 1.0];
 var lightColor = new Float32Array([1.0, 1.0, 1.0, 1.0]);	// White light.
-var moveLight = 0;                                              //0 : move the camera - 1 : Move the lights
+var moveLight = 0;                                                      //0 : move the camera - 1 : Move the lights
+
+// Transformed light direction and position for the scene. We need a matrix for each object.
+var lightDirectionTransformed = [];
+var lightPositionTransformed = [];
+
+var currentLightType = 1;         		// 1 -> Direct, 2 -> Point, 3 -> Point with decay, 4 -> Spot.
 
 var sceneObjects; // Total number of objects in the scene.
 
@@ -81,11 +87,6 @@ g_time=0;
 // Eye parameters: we need one eye vector for each object in the scene.
 //var observerPositionObj = [];
 
-// Transformed light direction and position for the scene. We need a matrix for each object.
-var lightDirectionTransformed = [];
-var lightPositionTransformed = [];
-
-var currentLightType = 2;         				// 1 -> Direct, 2 -> Point, 3 -> Point with decay, 4 -> Spot.
 var currentShader = 0;                			// Defines the current shader in use (0 -> Gouraud, 1 -> Phong).
 var textureInfluence = 0.0;						// Slider value for texture influence.
 var ambientLightInfluence = 0.0;				// Slider value for light influence.
@@ -532,7 +533,7 @@ function initInteraction(){
 
             //	lightDirection[2] -= 0.1 * Math.cos(utils.degToRad(angle));
             if (dungeonMap[9+cz][cx+6+delta]!="1"){
-                cx+=delta;
+                cy+=delta;
             }
         }
 
@@ -582,11 +583,11 @@ function initInteraction(){
                 elevation = elevation + 0.1* dy;
 
                 if (elevation>35){
-                    elevation=45};
+                    elevation=35};
 
             }
-            if (elevation<-5){
-                elevation=-5}
+            if (elevation<-35){
+                elevation=-35}
 
 
         }
