@@ -10,7 +10,6 @@ var modelsDir = "http://127.0.0.1:8887/models/";
 
 var perspectiveMatrix,
     viewMatrix;
-var currentTime = (new Date).getTime();
 var vertexNormalHandle = new Array(2);
 var vertexPositionHandle = new Array(2);
 var vertexUVHandle = new Array(2);
@@ -39,15 +38,15 @@ var materialSpecPowerHandle  = new Array(2);			// It's the handle for the expone
 var objectSpecularPower = 20.0;									// Actual exponent used.
 
 // Parameters for light definition (directional light).
-var dirLightAlpha = -utils.degToRad(60);
-var dirLightBeta  = -utils.degToRad(120);
+var dirLightAlpha = -utils.degToRad(120);
+var dirLightBeta  = -utils.degToRad(90);
 
 // Computation of direct light direction vector.
 var lightDirection = [Math.cos(dirLightAlpha) * Math.cos(dirLightBeta),
     Math.sin(dirLightAlpha),
     Math.cos(dirLightAlpha) * Math.sin(dirLightBeta),
 ];
-var lightPosition = [0.0, 0.5, 0.0, 1.0];
+var lightPosition = [0.0, 10.0, 0.0, 1.0];
 var lightColor = new Float32Array([1.0, 1.0, 1.0, 1.0]);	// White light.
 var moveLight = 0;                                                      //0 : move the camera - 1 : Move the lights
 
@@ -101,8 +100,7 @@ var textureInfluence = 0.0;						// Slider value for texture influence.
 var ambientLightInfluence = 0.0;				// Slider value for light influence.
 var ambientLightColor = [1.0, 1.0, 1.0, 1.0];	// Starting light color is white.
 
-var dungeonMap = [];				// Matrix containing the map that states where the can or cannot go.
-
+var dungeonMap = [];				            // Matrix containing the map that states where the can or cannot go.
 
 // Boolean used to check whether doors are open or not.
 var door1Open = false;
@@ -118,6 +116,13 @@ var lever5PositionReached = false;
 var lever1Down = false;
 var lever3Down = false;
 var lever5Down = false;
+
+// Previous values used for the translation along the y axis of the various doors.
+var previousYDoor1 = 0.0;
+var previousYDoor3 = 0.0;
+var previousYDoor5 = 0.0;
+
+var mouseSensitivity = 0.05;
 
 function main(){
 
@@ -196,6 +201,7 @@ function updateLightMovement(){
         moveLight = 1;
     } else {
         moveLight = 0;
+        resetLights();
     }
 }
 
@@ -496,22 +502,6 @@ function initInteraction(){
                              ((cx === 9 && (cz === 2 || cz === 4)) && door3Open === true) ||
                              ((cx === 4 && (cz === -3 || cz === -1)) && door5Open === true));
 
-
-      
-        if (e.keyCode === 107) {	// Add
-            //	if(moveLight == 0)  cx+=delta;
-
-            //	else lightPosition[1] +=delta;
-cy+=delta;
-        }
-
-        //to get the actual position
-        if (e.keyCode === 109) {	// Subtract
-        cy-=delta;
-
-        }
-
-
         if (e.keyCode === 38) {	// Arrow up
             cy += delta;
         }
@@ -674,7 +664,7 @@ cy+=delta;
 
         if (e.keyCode === 81 ) {  // Q
             // The angles represent the angle the camera should have to look at the lever.
-            if(lever5PositionReached === true && door5Open === false && angle > -60 && angle < -0) {
+            if(lever5PositionReached === true && door5Open === false && angle > -60 && angle < 0) {
                 door5Open = true;
             }
             else if(lever3PositionReached === true && door3Open === false && angle > -60 && angle < 0) {
@@ -707,7 +697,6 @@ cy+=delta;
      * @param e Event representing the movement of the mouse.
      */
     function updatePosition(e) {
-        let mouseSensitivity = 0.05;
         let angleTemp = angle - e.movementX * mouseSensitivity;
         (angleTemp <= -360.0 || angleTemp >= 360.0) ? angleTemp = 0.0 : angleTemp; // Reset the angle if it goes beyond its limits.
         let elevationTemp = elevation - e.movementY * mouseSensitivity;
@@ -762,10 +751,17 @@ cy+=delta;
  * for further computation.
  */
 function computeMatrices() {
-    // debug values, todo remove these.
 
     // Computation of the view matrix, done once for the whole scene.
     viewMatrix = utils.MakeView(cx, cy, cz, elevation, angle);
+
+    if(moveLight === 1) {
+        lightPosition = [cx, cy, cz, 1];
+        lightDirection = [Math.cos(elevation) * Math.cos(-angle),
+            Math.sin(elevation),
+            Math.cos(elevation) * Math.sin(-angle),
+        ];
+    }
 
     // Computation of light position for the whole scene, done once in the CPU.
     lightPositionTransformed = utils.multiplyMatrixVector(viewMatrix, lightPosition);
@@ -773,12 +769,23 @@ function computeMatrices() {
     // Computation of light direction for the whole the scene, done once in the CPU.
     lightDirectionTransformed = utils.multiplyMatrix3Vector3(utils.sub3x3from4x4(viewMatrix), lightDirection);
 
-    for(let i = 0; i < sceneObjects; i++){
+    for(let i = 0; i < sceneObjects; i++) {
         // Computation of world-view, projection and normal matrices for each object of the scene.
         worldViewMatrix[i] = utils.multiplyMatrices(viewMatrix, objectWorldMatrix[i]);
         worldViewProjectionMatrix[i] = utils.multiplyMatrices(perspectiveMatrix, worldViewMatrix[i]);
         normalsTransformMatrix[i] = utils.invertMatrix(utils.transposeMatrix(worldViewMatrix[i]));
     }
+}
+
+/**
+ * Function ud to reset the light after passing from moveLights === 1 to moveLights === 0.
+ */
+function resetLights() {
+    lightDirection = [Math.cos(dirLightAlpha) * Math.cos(dirLightBeta),
+        Math.sin(dirLightAlpha),
+        Math.cos(dirLightAlpha) * Math.sin(dirLightBeta),
+    ];
+    lightPosition = [0.0, 10.0, 0.0, 1.0];
 }
 
 function doResize() {
@@ -806,49 +813,6 @@ function doResize() {
 
 
 }
-
-/**
- * //todo comment
- */
-//function to animate door 5; it is an implementation of Bezier interpolation
-function animate5(deltaT) {
-    alpha = deltaT/2.5;
-    var mat = objectWorldMatrix[4];
-    var uma = 1 - alpha;
-    if (alpha >= 0 && alpha <= 1) {
-    console.log(alpha);
-        var c0 = uma * uma * uma;
-        var c1 = 3 * uma * uma * alpha;
-        var c2 = 3 * uma * alpha * alpha;
-        var c3 = alpha * alpha * alpha;
-        var cx = [0, 0, 0, 0];
-        var cy = [0,0,0,-0.00189];
-        var cz = [0, 0, 0, 0];
-        //translation matrix
-        var MT = utils.MakeTranslateMatrix(0, cy[0] * c0 + cy[1] * c1 + cy[2] * c2 + cy[3] * c3,0);
-
-        objectWorldMatrix[4] = utils.multiplyMatrices(MT,objectWorldMatrix[4]);
-
-
-  }
-
-
-
-
-}
-
-
-
-
-
-
-
-
-
-// Previous values used for the translation along the y axis of the various doors.
-var previousYDoor1 = 0.0;
-var previousYDoor3 = 0.0;
-var previousYDoor5 = 0.0;
 
 /**
  * Function used to animate a door; it is an implementation of Bezier interpolation.
