@@ -496,14 +496,13 @@ function initInteraction(){
 
             //	else lightPosition[1] +=delta;
 
-            door5Open=true;
         }
 
         //to get the actual position
         if (e.keyCode === 109) {	// Subtract
-
             console.log(" actual position:(cx:"+(cx) + "/" + "cy: "+ cy + "/" +"cz: "+ (cz) + ") - "+ elevation + "." + angle);
             console.log(" map position:(cx:"+(cx+6) + "/" + "cy: "+ cy + "/" +"cz: "+ (cz+9) + ") - "+ elevation + "." + angle);
+       cy-=delta;
         }
 
         if (e.keyCode === 87) {	// W
@@ -820,9 +819,9 @@ function doResize() {
 /**
  * //todo comment
  */
-//function to animate door 5; it is an implementation o Bezier interpolation
+//function to animate door 5; it is an implementation of Bezier interpolation
 function animate5(deltaT) {
-    alpha = deltaT / 2;
+    alpha = deltaT/2;
     var mat = worldViewProjectionMatrix[4];
 
     var uma = 1 - alpha;
@@ -843,8 +842,9 @@ function animate5(deltaT) {
         worldViewProjectionMatrix[4] = utils.multiplyMatrices(worldViewProjectionMatrix[4], MT);
 
 
-    } else {
         worldViewProjectionMatrix[4] = utils.multiplyMatrices(mat, utils.MakeTranslateMatrix(0, -0.28, 0));
+    }else  {
+      worldViewProjectionMatrix[4] = utils.multiplyMatrices(mat,utils.MakeTranslateMatrix(0,-0.28,0));
     }
 }
 
@@ -853,29 +853,14 @@ function animate5(deltaT) {
 
 function turnDownLever5(deltaT) {
 
-    alpha = deltaT;
-
-    var uma = 1 - alpha;
-    if (alpha >= 0 && alpha <= 1) {
-        var c0 = uma * uma * uma;
-        var c1 = 3 * uma * uma * alpha;
-        var c2 = 3 * uma * alpha * alpha;
-        var c3 = alpha * alpha * alpha;
-        var cx = [0, 0, 0, 0];
-        var cy = [0, 0, 0, 0];
-        var cz = [0, 0, 0, 0];
-        //translation matrix
-        var MT = utils.MakeTranslateMatrix(cx[0] * c0 + cx[1] * c1 + cx[2] * c2 + cx[3] * c3,
-            cy[0] * c0 + cy[1] * c1 + cy[2] * c2 + cy[3] * c3,
-            cz[0] * c0 + cz[1] * c1 + cz[2] * c2 + cz[3] * c3);
 
 
-        var MS = utils.multiplyMatrices(MT, utils.MakeRotateXMatrix(180));
 
-        worldViewProjectionMatrix[3] = utils.multiplyMatrices(MS, worldViewProjectionMatrix[3]);
-    }
+
+
 
 }
+
 
 function animate3(deltaT) {
     alpha = deltaT / 2;
