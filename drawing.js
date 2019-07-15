@@ -506,13 +506,15 @@ function initInteraction(){
             console.log(" map position:(cx:"+(cx+6) + "/" + "cy: "+ cy + "/" +"cz: "+ (cz+9) + ") - "+ elevation + "." + angle);
         }
 
-        if (e.keyCode === 87) {	// w
+        if (e.keyCode === 87) {	// W
+            // todo handle "portable lights"
             //if(moveLight == 0)elevation+=delta * 10.0;
             //else{
             //	lightDirection[0] += 0.1 * Math.sin(utils.degToRad(angle));
 
             //	lightDirection[2] -= 0.1 * Math.cos(utils.degToRad(angle));
-            if(angle > -45.0 && angle <= 45.0) {                        // Looking forward.
+
+            if(angle > -45.0 && angle <= 45.0) {                                // Looking forward, going forward.
                 // The conditions are about the presence of a wall or of a closed/open door (from both sides).
                 if ((dungeonMap[cz + mapStartingPointZ - delta][cx + mapStartingPointX] !== 1 &&
                     dungeonMap[cz + mapStartingPointZ - delta][cx + mapStartingPointX] !== 2) || doorIsOpen) {
@@ -520,22 +522,21 @@ function initInteraction(){
                     cz -= delta;
                 }
             }
-            else if(angle > 45.0 && angle <= 135.0) {                   // Looking left.
+            else if(angle > 45.0 && angle <= 135.0) {                           // Looking left, going left.
                 if ((dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX - delta] !== 1 &&
                     dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX - delta] !== 2) || doorIsOpen) {
 
                     cx -= delta;
                 }
             }
-            else if((angle > 135.0 && angle <= 180.0) || (angle > -180.0 && angle <= -135.0)) {                 // Looking backward.
-                let positionDebug = dungeonMap[cz + mapStartingPointZ + delta][cx + mapStartingPointX];
+            else if((angle > 135.0 && angle <= 180.0) || (angle > -180.0 && angle <= -135.0)) {                 // Looking backward, going backward.
                 if ((dungeonMap[cz + mapStartingPointZ + delta][cx + mapStartingPointX] !== 1 &&
                     dungeonMap[cz + mapStartingPointZ + delta][cx + mapStartingPointX] !== 2) || doorIsOpen) {
 
                     cz += delta;
                 }
             }
-            else if(angle > -135.0 && angle <= -45.0) {                 // Looking right.
+            else if(angle > -135.0 && angle <= -45.0) {                         // Looking right, going right.
                 if ((dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX + delta] !== 1 &&
                     dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX + delta] !== 2) || doorIsOpen) {
 
@@ -544,34 +545,113 @@ function initInteraction(){
             }
         }
 
-        if (e.keyCode === 65) {	// a
-            //cy += delta;
-            if ((dungeonMap[cz + mapStartingPointZ - delta][cx + mapStartingPointX] !== 1 && dungeonMap[cz + mapStartingPointZ - delta][cx + mapStartingPointX] !== 2)||((cx === 4 && cz === -1) && door5Open === true)||((cx === 9 && cz === 4) && door3Open === true)) {
-               cz -= delta;
+        if (e.keyCode === 65) {	// A
+            if(angle > -45.0 && angle <= 45.0) {                                // Looking forward, going left.
+                // The conditions are about the presence of a wall or of a closed/open door (from both sides).
+                if ((dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX - delta] !== 1 &&
+                    dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX - delta] !== 2) || doorIsOpen) {
 
+                    cx -= delta;
+                }
+            }
+            else if(angle > 45.0 && angle <= 135.0) {                           // Looking left, going backward.
+                if ((dungeonMap[cz + mapStartingPointZ + delta][cx + mapStartingPointX] !== 1 &&
+                    dungeonMap[cz + mapStartingPointZ + delta][cx + mapStartingPointX] !== 2) || doorIsOpen) {
+
+                    cz += delta;
+                }
+            }
+            else if((angle > 135.0 && angle <= 180.0) || (angle > -180.0 && angle <= -135.0)) {                 // Looking backward, going right.
+                if ((dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX + delta] !== 1 &&
+                    dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX + delta] !== 2) || doorIsOpen) {
+
+                    cx += delta;
+                }
+            }
+            else if(angle > -135.0 && angle <= -45.0) {                         // Looking right, going forward.
+                if ((dungeonMap[cz + mapStartingPointZ - delta][cx + mapStartingPointX] !== 1 &&
+                    dungeonMap[cz + mapStartingPointZ - delta][cx + mapStartingPointX] !== 2) || doorIsOpen) {
+
+                    cz -= delta;
+                }
             }
         }
-        if (e.keyCode === 68) {	// d
-            //if(moveLight == 0)angle+=delta * 1.0;
-            //else{
-            //	lightDirection[0] += 0.1 * Math.cos(utils.degToRad(angle));
-            //	lightDirection[2] += 0.1 * Math.sin(utils.degToRad(angle));
-            if ((dungeonMap[cz + mapStartingPointZ + delta][cx + mapStartingPointX] !== 1 && dungeonMap[cz + mapStartingPointZ + delta][cx + mapStartingPointX] !== 2)||((cx === 4 && cz === -3) && door5Open === true )||((cx === 9 && cz === 4) && door3Open === true)||(cx === 9 && cz === 2 && door3Open === true)) {
-               cz += delta;
-            }
-        }
 
-        if (e.keyCode === 83) {	// s
+        if (e.keyCode === 83) {	// S
             //if(moveLight == 0)elevation-=delta*10.0;
             //else{
             //	lightDirection[0] -= 0.1 * Math.sin(utils.degToRad(angle));
             //	lightDirection[2] += 0.1 * Math.cos(utils.degToRad(angle));
-          if ((dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX - delta] !== 1 && dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX - delta] !== 2)||(cx === 5 && cz === 3 && door1Open === true)) {
-                     cx -= delta;
-                                                                    }
             //else lightPosition[2] +=delta;
+
+            if(angle > -45.0 && angle <= 45.0) {                                // Looking forward, going backward.
+                // The conditions are about the presence of a wall or of a closed/open door (from both sides).
+                if ((dungeonMap[cz + mapStartingPointZ + delta][cx + mapStartingPointX] !== 1 &&
+                    dungeonMap[cz + mapStartingPointZ + delta][cx + mapStartingPointX] !== 2) || doorIsOpen) {
+
+                    cz += delta;
+                }
+            }
+            else if(angle > 45.0 && angle <= 135.0) {                           // Looking left, going right.
+                if ((dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX + delta] !== 1 &&
+                    dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX + delta] !== 2) || doorIsOpen) {
+
+                    cx += delta;
+                }
+            }
+            else if((angle > 135.0 && angle <= 180.0) || (angle > -180.0 && angle <= -135.0)) {                 // Looking backward, going forward.
+                if ((dungeonMap[cz + mapStartingPointZ - delta][cx + mapStartingPointX] !== 1 &&
+                    dungeonMap[cz + mapStartingPointZ - delta][cx + mapStartingPointX] !== 2) || doorIsOpen) {
+
+                    cz -= delta;
+                }
+            }
+            else if(angle > -135.0 && angle <= -45.0) {                         // Looking right, going left.
+                if ((dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX - delta] !== 1 &&
+                    dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX - delta] !== 2) || doorIsOpen) {
+
+                    cx -= delta;
+                }
+            }
+
         }
 
+        if (e.keyCode === 68) {	// D
+            //if(moveLight == 0)angle+=delta * 1.0;
+            //else{
+            //	lightDirection[0] += 0.1 * Math.cos(utils.degToRad(angle));
+            //	lightDirection[2] += 0.1 * Math.sin(utils.degToRad(angle));
+
+            if(angle > -45.0 && angle <= 45.0) {                                // Looking forward, going right.
+                // The conditions are about the presence of a wall or of a closed/open door (from both sides).
+                if ((dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX + delta] !== 1 &&
+                    dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX + delta] !== 2) || doorIsOpen) {
+
+                    cx += delta;
+                }
+            }
+            else if(angle > 45.0 && angle <= 135.0) {                           // Looking left, going forward.
+                if ((dungeonMap[cz + mapStartingPointZ - delta][cx + mapStartingPointX] !== 1 &&
+                    dungeonMap[cz + mapStartingPointZ - delta][cx + mapStartingPointX] !== 2) || doorIsOpen) {
+
+                    cz -= delta;
+                }
+            }
+            else if((angle > 135.0 && angle <= 180.0) || (angle > -180.0 && angle <= -135.0)) {                 // Looking backward, going left.
+                if ((dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX - delta] !== 1 &&
+                    dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX - delta] !== 2) || doorIsOpen) {
+
+                    cx -= delta;
+                }
+            }
+            else if(angle > -135.0 && angle <= -45.0) {                         // Looking right, going backward.
+                if ((dungeonMap[cz + mapStartingPointZ + delta][cx + mapStartingPointX] !== 1 &&
+                    dungeonMap[cz + mapStartingPointZ + delta][cx + mapStartingPointX] !== 2) || doorIsOpen) {
+
+                    cz += delta;
+                }
+            }
+        }
 
         if (e.keyCode === 81 ) {  // q
 
