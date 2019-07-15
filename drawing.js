@@ -840,10 +840,7 @@ function animate5(deltaT) {
 
 
         worldViewProjectionMatrix[4] = utils.multiplyMatrices(worldViewProjectionMatrix[4], MT);
-
-
-        worldViewProjectionMatrix[4] = utils.multiplyMatrices(mat, utils.MakeTranslateMatrix(0, -0.28, 0));
-    }else  {
+  }else  {
       worldViewProjectionMatrix[4] = utils.multiplyMatrices(mat,utils.MakeTranslateMatrix(0,-0.28,0));
     }
 }
