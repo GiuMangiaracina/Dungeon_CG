@@ -102,16 +102,21 @@ var ambientLightColor = [1.0, 1.0, 1.0, 1.0];	// Starting light color is white.
 
 var dungeonMap = [];				// Matrix containing the map that states where the can or cannot go.
 
-//boolean to activate door 5
-//boolean to activate doors
-var door5Open=false;
-var door3Open=false;
-var door1Open=false;
 
-//boolean to activate levers
-var lever5=false;
-var lever3=false;
-var lever1=false
+// Boolean used to check whether doors are open or not.
+var door1Open = false;
+var door3Open = false;
+var door5Open = false;
+
+// Booleans used to check whether the player is in the position of the levers.
+var lever1PositionReached = false;
+var lever3PositionReached = false;
+var lever5PositionReached = false;
+
+// Booleans used to check levers status.
+var lever1Down = false;
+var lever3Down = false;
+var lever5Down = false;
 
 function main(){
 
@@ -491,16 +496,13 @@ function initInteraction(){
                              ((cx === 4 && (cz === -3 || cz === -1)) && door5Open === true));
 
         //to activate animation on door 5
-        if (e.keyCode === 107) {	// Add
-            //	if(moveLight == 0)  cx+=delta;
-
-            //	else lightPosition[1] +=delta;
-
-            door5Open=true;
+        if (e.keyCode === 38) {	// Arrow up
+            cy += delta;
         }
 
         //to get the actual position
-        if (e.keyCode === 109) {	// Subtract
+        if (e.keyCode === 40) {	// Arrow down
+            cy -=delta;
 
             console.log(" actual position:(cx:"+(cx) + "/" + "cy: "+ cy + "/" +"cz: "+ (cz) + ") - "+ elevation + "." + angle);
             console.log(" map position:(cx:"+(cx+6) + "/" + "cy: "+ cy + "/" +"cz: "+ (cz+9) + ") - "+ elevation + "." + angle);
@@ -655,13 +657,13 @@ function initInteraction(){
 
         if (e.keyCode === 81 ) {  // q
 
-            if(lever5 === true && door5Open === false) {
+            if(lever5PositionReached === true && door5Open === false) {
                 door5Open = true;
             }
-            else if(lever3 === true && door3Open === false) {
+            else if(lever3PositionReached === true && door3Open === false) {
                 door3Open = true;
             }
-            else if(lever1 === true && door1Open === false){
+            else if(lever1PositionReached === true && door1Open === false){
                 door1Open = true;
             }
         }
@@ -755,7 +757,6 @@ function initInteraction(){
         else {
             elevation = elevationTemp;
         }
-        console.log("X: " + e.movementY + ", Y: " + e.movementY + " \nAngle: " + angle + ", Elevation: " + elevation);
     }
 
     // Mouse movement handled with pointer lock.
@@ -785,6 +786,8 @@ function initInteraction(){
  * for further computation.
  */
 function computeMatrices() {
+    // debug values, todo remove these.
+
     // Computation of the view matrix, done once for the whole scene.
     viewMatrix = utils.MakeView(cx, cy, cz, elevation, angle);
 
@@ -848,33 +851,17 @@ function animate5(deltaT) {
     }
 }
 
-
-
-
-function turnDownLever5(deltaT) {
-
-    alpha = deltaT;
-
-    var uma = 1 - alpha;
-    if (alpha >= 0 && alpha <= 1) {
-        var c0 = uma * uma * uma;
-        var c1 = 3 * uma * uma * alpha;
-        var c2 = 3 * uma * alpha * alpha;
-        var c3 = alpha * alpha * alpha;
-        var cx = [0, 0, 0, 0];
-        var cy = [0, 0, 0, 0];
-        var cz = [0, 0, 0, 0];
-        //translation matrix
-        var MT = utils.MakeTranslateMatrix(cx[0] * c0 + cx[1] * c1 + cx[2] * c2 + cx[3] * c3,
-            cy[0] * c0 + cy[1] * c1 + cy[2] * c2 + cy[3] * c3,
-            cz[0] * c0 + cz[1] * c1 + cz[2] * c2 + cz[3] * c3);
-
-
-        var MS = utils.multiplyMatrices(MT, utils.MakeRotateXMatrix(180));
-
-        worldViewProjectionMatrix[3] = utils.multiplyMatrices(MS, worldViewProjectionMatrix[3]);
+/**
+ * This function is used to turn lever5 down.
+ */
+function turnDownLever5() {
+    if(!lever5Down) {
+        lever5Down = true;
+        let planarMirrorMatrix = utils.multiplyMatrices(utils.MakeTranslateMatrix(0.0, 0.5, 0.0),
+                utils.multiplyMatrices(utils.MakeScaleNuMatrix(1.0, -1.0, 1.0),
+                utils.MakeTranslateMatrix(0.0, -0.5, 0.0)));
+        objectWorldMatrix[3] = utils.multiplyMatrices(planarMirrorMatrix, objectWorldMatrix[3]);
     }
-
 }
 
 function animate3(deltaT) {
@@ -903,28 +890,17 @@ function animate3(deltaT) {
         worldViewProjectionMatrix[5] = utils.multiplyMatrices(mat, utils.MakeTranslateMatrix(0, -0.28, 0));
     }
 }
-function turnDownLever3(deltaT) {
 
-    alpha = deltaT;
-
-    var uma = 1 - alpha;
-    if (alpha >= 0 && alpha <= 1) {
-        var c0 = uma * uma * uma;
-        var c1 = 3 * uma * uma * alpha;
-        var c2 = 3 * uma * alpha * alpha;
-        var c3 = alpha * alpha * alpha;
-        var cx = [0, 0, 0, 0];
-        var cy = [0, 0, 0, 0];
-        var cz = [-0.001, -0.0025, -0.002, -0.0025];
-        //translation matrix
-        var MT = utils.MakeTranslateMatrix(cx[0] * c0 + cx[1] * c1 + cx[2] * c2 + cx[3] * c3,
-            cy[0] * c0 + cy[1] * c1 + cy[2] * c2 + cy[3] * c3,
-            cz[0] * c0 + cz[1] * c1 + cz[2] * c2 + cz[3] * c3);
-
-
-        //90
-        var MS = utils.multiplyMatrices(MT, utils.MakeRotateXMatrix(90));
-        worldViewProjectionMatrix[2] = utils.multiplyMatrices(MS, worldViewProjectionMatrix[2]);
+/**
+ * This function is used to turn lever3 down.
+ */
+function turnDownLever3() {
+    if(!lever3Down) {
+        lever3Down = true;
+        let planarMirrorMatrix = utils.multiplyMatrices(utils.MakeTranslateMatrix(0.0, 0.5, 0.0),
+                utils.multiplyMatrices(utils.MakeScaleNuMatrix(1.0, -1.0, 1.0),
+                utils.MakeTranslateMatrix(0.0, -0.5, 0.0)));
+        objectWorldMatrix[2] = utils.multiplyMatrices(planarMirrorMatrix, objectWorldMatrix[2]);
     }
 }
 
@@ -956,28 +932,16 @@ function animate1(deltaT) {
     }
 }
 
-function turnDownLever1(deltaT) {
-
-    alpha = deltaT;
-
-    var uma = 1 - alpha;
-
-    if (alpha >= 0 && alpha <= 1) {
-        var c0 = uma * uma * uma;
-        var c1 = 3 * uma * uma * alpha;
-        var c2 = 3 * uma * alpha * alpha;
-        var c3 = alpha * alpha * alpha;
-        var cx = [0, 0, 0, 0];
-        var cy = [0, 0, 0, 0];
-        var cz = [-0.001, -0.0025, -0.002, -0.0025];
-        //translation matrix
-        var MT = utils.MakeTranslateMatrix(cx[0] * c0 + cx[1] * c1 + cx[2] * c2 + cx[3] * c3,
-            cy[0] * c0 + cy[1] * c1 + cy[2] * c2 + cy[3] * c3,
-            cz[0] * c0 + cz[1] * c1 + cz[2] * c2 + cz[3] * c3);
-
-
-        var MS = utils.multiplyMatrices(MT, utils.MakeRotateXMatrix(180));
-        worldViewProjectionMatrix[1] = utils.multiplyMatrices(MS, worldViewProjectionMatrix[1]);
+/**
+ * This function is used to turn lever1 down.
+ */
+function turnDownLever1() {
+    if(!lever1Down) {
+        lever1Down = true;
+        let planarMirrorMatrix = utils.multiplyMatrices(utils.MakeTranslateMatrix(0.0, 0.5, 0.0),
+            utils.multiplyMatrices(utils.MakeScaleNuMatrix(1.0, -1.0, 1.0),
+                utils.MakeTranslateMatrix(0.0, -0.5, 0.0)));
+        objectWorldMatrix[1] = utils.multiplyMatrices(planarMirrorMatrix, objectWorldMatrix[1]);
     }
 }
 
@@ -1066,7 +1030,7 @@ function drawScene() {
 
 
         //activate door 5
-        if (door5Open == true) {
+        if (door5Open === true) {
             var currentTime = (new Date).getTime();
             var deltaT;
             if (lastUpdateTime) {
@@ -1077,14 +1041,11 @@ function drawScene() {
             lastUpdateTime = currentTime;
             g_time += deltaT;
             animate5(g_time);
-
-            turnDownLever5(g_time);
-
+            turnDownLever5()
         }
 
         //activate door 3
-        if (door3Open == true) {
-
+        if (door3Open === true) {
             var currentTime2 = (new Date).getTime();
             var deltaT2;
             if (lastUpdateTime2) {
@@ -1095,12 +1056,11 @@ function drawScene() {
             lastUpdateTime2 = currentTime2;
             g_time2 += deltaT2;
             animate3(g_time2);
-            turnDownLever3(g_time2);
-
+            turnDownLever3();
         }
 
         //activate door 1
-        if (door1Open == true) {
+        if (door1Open === true) {
             var currentTime3 = (new Date).getTime();
             var deltaT3;
             if (lastUpdateTime3) {
@@ -1111,27 +1071,18 @@ function drawScene() {
             lastUpdateTime3 = currentTime3;
             g_time3 += deltaT3;
             animate1(g_time3);
-            turnDownLever1(g_time3);
+            turnDownLever1();
         }
 
         //turn down the levers
         if (cx === 3 && cz === -1 && angle< -20 && angle > -70) {
-            lever5 = true;
-
+            lever5PositionReached = true;
         }
-
-
         if (cx === 8 && cz === 4 && angle< -20 && angle > -70) {
-
-
-            lever3 = true;
-
+            lever3PositionReached = true;
         }
-
         if (cx === 2 && cz === 2 && angle< -20 && angle > -70) {
-            lever1 = true;
-
-
+            lever1PositionReached = true;
         }
 
 
