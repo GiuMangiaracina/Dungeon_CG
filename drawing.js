@@ -500,11 +500,13 @@ function initInteraction(){
             //	if(moveLight == 0)  cx+=delta;
 
             //	else lightPosition[1] +=delta;
-
+cy+=delta;
         }
 
         //to get the actual position
         if (e.keyCode === 109) {	// Subtract
+        cy-=delta;
+
         }
 
         if (e.keyCode === 38) {	// Arrow up
@@ -783,7 +785,7 @@ function initInteraction(){
     //	canvas.addEventListener("click",clickOnLever,false);
 
     //activate to have resize
-    //	window.onresize = doResize();
+
 
     // Pointer lock event listener.
     // Hook pointer lock state change events for different browsers
@@ -820,8 +822,16 @@ function computeMatrices() {
 function doResize() {
     // set canvas dimensions
     var canvas = document.getElementById("my-canvas");
+
+
+
     if((window.innerWidth > 40) && (window.innerHeight > 240)) {
+
+
+
+
         canvas.width  = window.innerWidth-16;
+
         canvas.height = window.innerHeight-200;
         var w=canvas.clientWidth;
         var h=canvas.clientHeight;
@@ -831,34 +841,37 @@ function doResize() {
 
         aspectRatio = w/h;
     }
+
+
 }
 /**
  * //todo comment
  */
 //function to animate door 5; it is an implementation of Bezier interpolation
 function animate5(deltaT) {
-    alpha = deltaT/2;
-    var mat = worldViewProjectionMatrix[4];
-
+    alpha = deltaT/2.5;
+    var mat = objectWorldMatrix[4];
     var uma = 1 - alpha;
     if (alpha >= 0 && alpha <= 1) {
+    console.log(alpha);
         var c0 = uma * uma * uma;
         var c1 = 3 * uma * uma * alpha;
         var c2 = 3 * uma * alpha * alpha;
         var c3 = alpha * alpha * alpha;
         var cx = [0, 0, 0, 0];
-        var cy = [0, -0.10, -0.2, -0.3];
+        var cy = [0,0,0,-0.00189];
         var cz = [0, 0, 0, 0];
         //translation matrix
-        var MT = utils.MakeTranslateMatrix(cx[0] * c0 + cx[1] * c1 + cx[2] * c2 + cx[3] * c3,
-            cy[0] * c0 + cy[1] * c1 + cy[2] * c2 + cy[3] * c3,
-            cz[0] * c0 + cz[1] * c1 + cz[2] * c2 + cz[3] * c3);
+        var MT = utils.MakeTranslateMatrix(0, cy[0] * c0 + cy[1] * c1 + cy[2] * c2 + cy[3] * c3,0);
+
+        objectWorldMatrix[4] = utils.multiplyMatrices(MT,objectWorldMatrix[4]);
 
 
-        worldViewProjectionMatrix[4] = utils.multiplyMatrices(worldViewProjectionMatrix[4], MT);
-  }else  {
-      worldViewProjectionMatrix[4] = utils.multiplyMatrices(mat,utils.MakeTranslateMatrix(0,-0.28,0));
-    }
+  }
+//objectWorldMatrix[4] = utils.multiplyMatrices(MT,mat);
+
+
+
 }
 
 
@@ -967,7 +980,7 @@ function turnDownLever1() {
 }
 
 function drawScene() {
-
+//canvas.onresize = doResize();
     computeMatrices();
 
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
