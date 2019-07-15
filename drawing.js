@@ -696,13 +696,13 @@ function initInteraction(){
                 console.log(angle);
                 elevation = elevation + 0.1* dy;
 
-                if (elevation>35){
-                    elevation=35;}
+                if (elevation>25){
+                    elevation=25;}
 
                 }
-            if (elevation<-35)
+            if (elevation<-38)
             {
-                elevation=-35;}
+                elevation=-38;}
 
 
         }
@@ -757,11 +757,6 @@ function initInteraction(){
         }
         console.log("X: " + e.movementY + ", Y: " + e.movementY + " \nAngle: " + angle + ", Elevation: " + elevation);
     }
-
-
-    //function clickOnLever(event){
-    //console.log("cliccato");
-//}
 
     // Mouse movement handled with pointer lock.
 
@@ -1119,21 +1114,21 @@ function drawScene() {
             turnDownLever1(g_time3);
         }
 
-        //turn down the lever 5
-        if (cx === 3 && cz === -1 && (angle > 45.0 && angle < 135.0)) {
+        //turn down the levers
+        if (cx === 3 && cz === -1 && angle< -20 && angle > -70) {
             lever5 = true;
 
         }
 
 
-        if (cx === 8 && cz === 4) {
+        if (cx === 8 && cz === 4 && angle< -20 && angle > -70) {
 
 
             lever3 = true;
 
         }
 
-        if (cx === 2 && cz === 2) {
+        if (cx === 2 && cz === 2 && angle< -20 && angle > -70) {
             lever1 = true;
 
 
