@@ -80,18 +80,19 @@ var cz = 0;
 var elevation = 0;
 var angle = 0;
 
-//delta for movement
+// Delta for movement.
 var delta = 1;
-//parameters for time
-var lastUpdateTime;
-g_time=0;
+
+// Last update for the animation of each door.
+var lastUpdateTime1;
 var lastUpdateTime2;
-g_time2=0;
-
 var lastUpdateTime3;
-g_time3=0;
 
-var currentTime = (new Date).getTime();
+// Accumulators of the time passed, used in the animations of the doors.
+var accumulator1 = 0.0;
+var accumulator2 = 0.0;
+var accumulator3 = 0.0;
+
 // Eye parameters: we need one eye vector for each object in the scene.
 //var observerPositionObj = [];
 
@@ -142,7 +143,7 @@ function main(){
 
 
         // Computation of the perspective matrix, done only once.
-        perspectiveMatrix = utils.MakePerspective(90, w/h, 0.1, 100.0);
+        perspectiveMatrix = utils.MakePerspective(85, w/h, 0.1, 100.0);
 
         // Loads the map containing the "cells" the player can or cannot go.
         loadMap("Mapasterix.json");
@@ -506,6 +507,7 @@ function initInteraction(){
 
             console.log(" actual position:(cx:"+(cx) + "/" + "cy: "+ cy + "/" +"cz: "+ (cz) + ") - "+ elevation + "." + angle);
             console.log(" map position:(cx:"+(cx+6) + "/" + "cy: "+ cy + "/" +"cz: "+ (cz+9) + ") - "+ elevation + "." + angle);
+            console.log(" camera angle: " + angle);
         }
 
         if (e.keyCode === 87) {	// W
@@ -517,30 +519,30 @@ function initInteraction(){
             //	lightDirection[2] -= 0.1 * Math.cos(utils.degToRad(angle));
 
             if(angle > -45.0 && angle <= 45.0) {                                // Looking forward, going forward.
-                // The conditions are about the presence of a wall or of a closed/open door (from both sides).
-                if ((dungeonMap[cz + mapStartingPointZ - delta][cx + mapStartingPointX] !== 1 &&
-                    dungeonMap[cz + mapStartingPointZ - delta][cx + mapStartingPointX] !== 2) || doorIsOpen) {
+                // The conditions are about the absence (0) of a wall or of a open (2) door (from both sides).
+                if ((dungeonMap[cz + mapStartingPointZ - delta][cx + mapStartingPointX] === 0) ||
+                    (doorIsOpen && dungeonMap[cz + mapStartingPointZ - delta][cx + mapStartingPointX] === 2)) {
 
                     cz -= delta;
                 }
             }
             else if(angle > 45.0 && angle <= 135.0) {                           // Looking left, going left.
-                if ((dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX - delta] !== 1 &&
-                    dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX - delta] !== 2) || doorIsOpen) {
+                if ((dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX - delta] === 0) ||
+                    (doorIsOpen && dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX - delta] === 2)) {
 
                     cx -= delta;
                 }
             }
             else if((angle > 135.0 && angle <= 180.0) || (angle > -180.0 && angle <= -135.0)) {                 // Looking backward, going backward.
-                if ((dungeonMap[cz + mapStartingPointZ + delta][cx + mapStartingPointX] !== 1 &&
-                    dungeonMap[cz + mapStartingPointZ + delta][cx + mapStartingPointX] !== 2) || doorIsOpen) {
+                if ((dungeonMap[cz + mapStartingPointZ + delta][cx + mapStartingPointX] !== 1) ||
+                    (doorIsOpen && dungeonMap[cz + mapStartingPointZ + delta][cx + mapStartingPointX] === 2)) {
 
                     cz += delta;
                 }
             }
             else if(angle > -135.0 && angle <= -45.0) {                         // Looking right, going right.
-                if ((dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX + delta] !== 1 &&
-                    dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX + delta] !== 2) || doorIsOpen) {
+                if ((dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX + delta] === 0) ||
+                    (doorIsOpen && dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX + delta] === 2)) {
 
                     cx += delta;
                 }
@@ -549,30 +551,30 @@ function initInteraction(){
 
         if (e.keyCode === 65) {	// A
             if(angle > -45.0 && angle <= 45.0) {                                // Looking forward, going left.
-                // The conditions are about the presence of a wall or of a closed/open door (from both sides).
-                if ((dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX - delta] !== 1 &&
-                    dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX - delta] !== 2) || doorIsOpen) {
+                // The conditions are about the absence (0) of a wall or of a open (2) door (from both sides).
+                if ((dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX - delta] === 0) ||
+                    (doorIsOpen && dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX - delta] === 2)) {
 
                     cx -= delta;
                 }
             }
             else if(angle > 45.0 && angle <= 135.0) {                           // Looking left, going backward.
-                if ((dungeonMap[cz + mapStartingPointZ + delta][cx + mapStartingPointX] !== 1 &&
-                    dungeonMap[cz + mapStartingPointZ + delta][cx + mapStartingPointX] !== 2) || doorIsOpen) {
+                if ((dungeonMap[cz + mapStartingPointZ + delta][cx + mapStartingPointX] === 0) ||
+                    (doorIsOpen && dungeonMap[cz + mapStartingPointZ + delta][cx + mapStartingPointX] === 2)) {
 
                     cz += delta;
                 }
             }
             else if((angle > 135.0 && angle <= 180.0) || (angle > -180.0 && angle <= -135.0)) {                 // Looking backward, going right.
-                if ((dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX + delta] !== 1 &&
-                    dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX + delta] !== 2) || doorIsOpen) {
+                if ((dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX + delta] === 0) ||
+                    (doorIsOpen && dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX + delta] === 2)) {
 
                     cx += delta;
                 }
             }
             else if(angle > -135.0 && angle <= -45.0) {                         // Looking right, going forward.
-                if ((dungeonMap[cz + mapStartingPointZ - delta][cx + mapStartingPointX] !== 1 &&
-                    dungeonMap[cz + mapStartingPointZ - delta][cx + mapStartingPointX] !== 2) || doorIsOpen) {
+                if ((dungeonMap[cz + mapStartingPointZ - delta][cx + mapStartingPointX] === 0) ||
+                    (doorIsOpen && dungeonMap[cz + mapStartingPointZ - delta][cx + mapStartingPointX] === 2)) {
 
                     cz -= delta;
                 }
@@ -587,30 +589,30 @@ function initInteraction(){
             //else lightPosition[2] +=delta;
 
             if(angle > -45.0 && angle <= 45.0) {                                // Looking forward, going backward.
-                // The conditions are about the presence of a wall or of a closed/open door (from both sides).
-                if ((dungeonMap[cz + mapStartingPointZ + delta][cx + mapStartingPointX] !== 1 &&
-                    dungeonMap[cz + mapStartingPointZ + delta][cx + mapStartingPointX] !== 2) || doorIsOpen) {
+                // The conditions are about the absence (0) of a wall or of a open (2) door (from both sides).
+                if ((dungeonMap[cz + mapStartingPointZ + delta][cx + mapStartingPointX] === 0) ||
+                    (doorIsOpen && dungeonMap[cz + mapStartingPointZ + delta][cx + mapStartingPointX] === 2)) {
 
                     cz += delta;
                 }
             }
             else if(angle > 45.0 && angle <= 135.0) {                           // Looking left, going right.
-                if ((dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX + delta] !== 1 &&
-                    dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX + delta] !== 2) || doorIsOpen) {
+                if ((dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX + delta] === 0) ||
+                    (doorIsOpen && dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX + delta] === 2)) {
 
                     cx += delta;
                 }
             }
             else if((angle > 135.0 && angle <= 180.0) || (angle > -180.0 && angle <= -135.0)) {                 // Looking backward, going forward.
-                if ((dungeonMap[cz + mapStartingPointZ - delta][cx + mapStartingPointX] !== 1 &&
-                    dungeonMap[cz + mapStartingPointZ - delta][cx + mapStartingPointX] !== 2) || doorIsOpen) {
+                if ((dungeonMap[cz + mapStartingPointZ - delta][cx + mapStartingPointX] === 0) ||
+                    (doorIsOpen && dungeonMap[cz + mapStartingPointZ - delta][cx + mapStartingPointX] === 2)) {
 
                     cz -= delta;
                 }
             }
             else if(angle > -135.0 && angle <= -45.0) {                         // Looking right, going left.
-                if ((dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX - delta] !== 1 &&
-                    dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX - delta] !== 2) || doorIsOpen) {
+                if ((dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX - delta] === 0) ||
+                    (doorIsOpen && dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX - delta] === 2)) {
 
                     cx -= delta;
                 }
@@ -625,45 +627,45 @@ function initInteraction(){
             //	lightDirection[2] += 0.1 * Math.sin(utils.degToRad(angle));
 
             if(angle > -45.0 && angle <= 45.0) {                                // Looking forward, going right.
-                // The conditions are about the presence of a wall or of a closed/open door (from both sides).
-                if ((dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX + delta] !== 1 &&
-                    dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX + delta] !== 2) || doorIsOpen) {
+                // The conditions are about the absence (0) of a wall or of a open (2) door (from both sides).
+                if ((dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX + delta] === 0) ||
+                    (doorIsOpen && dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX + delta] === 2)) {
 
                     cx += delta;
                 }
             }
             else if(angle > 45.0 && angle <= 135.0) {                           // Looking left, going forward.
-                if ((dungeonMap[cz + mapStartingPointZ - delta][cx + mapStartingPointX] !== 1 &&
-                    dungeonMap[cz + mapStartingPointZ - delta][cx + mapStartingPointX] !== 2) || doorIsOpen) {
+                if ((dungeonMap[cz + mapStartingPointZ - delta][cx + mapStartingPointX] === 0) ||
+                    (doorIsOpen && dungeonMap[cz + mapStartingPointZ - delta][cx + mapStartingPointX] === 2)) {
 
                     cz -= delta;
                 }
             }
             else if((angle > 135.0 && angle <= 180.0) || (angle > -180.0 && angle <= -135.0)) {                 // Looking backward, going left.
-                if ((dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX - delta] !== 1 &&
-                    dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX - delta] !== 2) || doorIsOpen) {
+                if ((dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX - delta] === 0) ||
+                    (doorIsOpen && dungeonMap[cz + mapStartingPointZ][cx + mapStartingPointX - delta] === 2)) {
 
                     cx -= delta;
                 }
             }
             else if(angle > -135.0 && angle <= -45.0) {                         // Looking right, going backward.
-                if ((dungeonMap[cz + mapStartingPointZ + delta][cx + mapStartingPointX] !== 1 &&
-                    dungeonMap[cz + mapStartingPointZ + delta][cx + mapStartingPointX] !== 2) || doorIsOpen) {
+                if ((dungeonMap[cz + mapStartingPointZ + delta][cx + mapStartingPointX] === 0) ||
+                    (doorIsOpen && dungeonMap[cz + mapStartingPointZ + delta][cx + mapStartingPointX] === 2)) {
 
                     cz += delta;
                 }
             }
         }
 
-        if (e.keyCode === 81 ) {  // q
-
-            if(lever5PositionReached === true && door5Open === false) {
+        if (e.keyCode === 81 ) {  // Q
+            // The angles represent the angle the camera should have to look at the lever.
+            if(lever5PositionReached === true && door5Open === false && angle > -60 && angle < -0) {
                 door5Open = true;
             }
-            else if(lever3PositionReached === true && door3Open === false) {
+            else if(lever3PositionReached === true && door3Open === false && angle > -60 && angle < 0) {
                 door3Open = true;
             }
-            else if(lever1PositionReached === true && door1Open === false){
+            else if(lever1PositionReached === true && door1Open === false && angle > -150 && angle < -90) {
                 door1Open = true;
             }
         }
@@ -820,51 +822,63 @@ function doResize() {
         aspectRatio = w/h;
     }
 }
+
+// Previous values used for the translation along the y axis of the various doors.
+var previousYDoor1 = 0.0;
+var previousYDoor3 = 0.0;
+var previousYDoor5 = 0.0;
+
 /**
- * //todo comment
+ * Function used to animate a door; it is an implementation of Bezier interpolation.
+ * @param accumulatedTime Value representing the incrementing time during the animation.
+ * @param previousYDoor Value of the previous translation performed along the y axis on the door during the animation.
+ * @param doorIndex Index of the door inside the matrix containing the world matrices of all the objects in the scene.
+ * @return The updated value of previousYDoor relative to the door which is opening.
  */
-//function to animate door 5; it is an implementation o Bezier interpolation
-function animate5(deltaT) {
-    alpha = deltaT / 2;
-    var mat = worldViewProjectionMatrix[4];
+function animateDoor(accumulatedTime, previousYDoor, doorIndex) {
+    let alpha = accumulatedTime;
 
-    var uma = 1 - alpha;
+    let uma = 1 - alpha;
     if (alpha >= 0 && alpha <= 1) {
-        var c0 = uma * uma * uma;
-        var c1 = 3 * uma * uma * alpha;
-        var c2 = 3 * uma * alpha * alpha;
-        var c3 = alpha * alpha * alpha;
-        var cx = [0, 0, 0, 0];
-        var cy = [0, -0.10, -0.2, -0.3];
-        var cz = [0, 0, 0, 0];
+        let c0 = uma * uma * uma;
+        let c1 = 3 * uma * uma * alpha;
+        let c2 = 3 * uma * alpha * alpha;
+        let c3 = alpha * alpha * alpha;
+        let doorTranslationControlPoints = [0, -0.33, -0.66, -1.0];
         //translation matrix
-        var MT = utils.MakeTranslateMatrix(cx[0] * c0 + cx[1] * c1 + cx[2] * c2 + cx[3] * c3,
-            cy[0] * c0 + cy[1] * c1 + cy[2] * c2 + cy[3] * c3,
-            cz[0] * c0 + cz[1] * c1 + cz[2] * c2 + cz[3] * c3);
-
-
-        worldViewProjectionMatrix[4] = utils.multiplyMatrices(worldViewProjectionMatrix[4], MT);
-
-
-    } else {
-        worldViewProjectionMatrix[4] = utils.multiplyMatrices(mat, utils.MakeTranslateMatrix(0, -0.28, 0));
+        let MT = utils.MakeTranslateMatrix(0,(doorTranslationControlPoints[0] * c0 +
+                                                        doorTranslationControlPoints[1] * c1 +
+                                                        doorTranslationControlPoints[2] * c2 +
+                                                        doorTranslationControlPoints[3] * c3) - previousYDoor, 0);
+        previousYDoor = doorTranslationControlPoints[0] * c0 +
+                         doorTranslationControlPoints[1] * c1 +
+                         doorTranslationControlPoints[2] * c2 +
+                         doorTranslationControlPoints[3] * c3;
+        objectWorldMatrix[doorIndex] = utils.multiplyMatrices(MT, objectWorldMatrix[doorIndex]);
     }
+
+    return previousYDoor;
 }
 
 /**
- * This function is used to turn lever5 down.
+ * This function is used to turn a lever down.
+ * @param leverToCheckIsDown Boolean that states if the specified lever has been activated or not.
+ * @param leverIndex Index of the lever inside the matrix containing the world matrices of all the objects in the scene.
+ * @return The updated value of the boolean passed in input, relative to the lever which is being activated.
  */
-function turnDownLever5() {
-    if(!lever5Down) {
-        lever5Down = true;
+function turnDownLever(leverToCheckIsDown, leverIndex) {
+    if(!leverToCheckIsDown) {
+        leverToCheckIsDown = true;
         let planarMirrorMatrix = utils.multiplyMatrices(utils.MakeTranslateMatrix(0.0, 0.5, 0.0),
                 utils.multiplyMatrices(utils.MakeScaleNuMatrix(1.0, -1.0, 1.0),
                 utils.MakeTranslateMatrix(0.0, -0.5, 0.0)));
-        objectWorldMatrix[3] = utils.multiplyMatrices(planarMirrorMatrix, objectWorldMatrix[3]);
+        objectWorldMatrix[leverIndex] = utils.multiplyMatrices(planarMirrorMatrix, objectWorldMatrix[leverIndex]);
     }
+
+    return leverToCheckIsDown;
 }
 
-function animate3(deltaT) {
+/*function animate3(deltaT) {
     alpha = deltaT / 2;
     var mat = worldViewProjectionMatrix[5];
 
@@ -889,7 +903,7 @@ function animate3(deltaT) {
     } else {
         worldViewProjectionMatrix[5] = utils.multiplyMatrices(mat, utils.MakeTranslateMatrix(0, -0.28, 0));
     }
-}
+}*/
 
 /**
  * This function is used to turn lever3 down.
@@ -905,7 +919,7 @@ function turnDownLever3() {
 }
 
 //DOOR 1
-function animate1(deltaT) {
+/*function animate1(deltaT) {
     alpha = deltaT / 2;
     var mat = worldViewProjectionMatrix[6];
 
@@ -930,7 +944,7 @@ function animate1(deltaT) {
     } else {
         worldViewProjectionMatrix[6] = utils.multiplyMatrices(mat, utils.MakeTranslateMatrix(0, -0.28, 0));
     }
-}
+}*/
 
 /**
  * This function is used to turn lever1 down.
@@ -1031,57 +1045,57 @@ function drawScene() {
 
         //activate door 5
         if (door5Open === true) {
-            var currentTime = (new Date).getTime();
-            var deltaT;
-            if (lastUpdateTime) {
-                deltaT = (currentTime - lastUpdateTime) / 1000.0;
+            let currentTime = (new Date).getTime();                 // milliseconds.
+            let deltaT;
+            if (lastUpdateTime1) {
+                deltaT = (currentTime - lastUpdateTime1) / 1000.0;   // seconds.
             } else {
-                deltaT = 1 / 50;
+                deltaT = 0.02;
             }
-            lastUpdateTime = currentTime;
-            g_time += deltaT;
-            animate5(g_time);
-            turnDownLever5()
+            lastUpdateTime1 = currentTime;
+            accumulator1 += deltaT;
+            previousYDoor5 = animateDoor(accumulator1, previousYDoor5, 4);
+            lever5Down = turnDownLever(lever5Down, 3);
         }
 
         //activate door 3
         if (door3Open === true) {
-            var currentTime2 = (new Date).getTime();
-            var deltaT2;
+            let currentTime2 = (new Date).getTime();
+            let deltaT2;
             if (lastUpdateTime2) {
                 deltaT2 = (currentTime2 - lastUpdateTime2) / 1000.0;
             } else {
-                deltaT2 = 1 / 50;
+                deltaT2 = 0.02;
             }
             lastUpdateTime2 = currentTime2;
-            g_time2 += deltaT2;
-            animate3(g_time2);
-            turnDownLever3();
+            accumulator2 += deltaT2;
+            previousYDoor3 = animateDoor(accumulator2, previousYDoor3, 5);
+            lever3Down = turnDownLever(lever3Down, 2);
         }
 
         //activate door 1
         if (door1Open === true) {
-            var currentTime3 = (new Date).getTime();
-            var deltaT3;
+            let currentTime3 = (new Date).getTime();
+            let deltaT3;
             if (lastUpdateTime3) {
                 deltaT3 = (currentTime3 - lastUpdateTime3) / 1000.0;
             } else {
-                deltaT3 = 1 / 50;
+                deltaT3 = 0.02;
             }
             lastUpdateTime3 = currentTime3;
-            g_time3 += deltaT3;
-            animate1(g_time3);
-            turnDownLever1();
+            accumulator3 += deltaT3;
+            previousYDoor1 = animateDoor(accumulator3, previousYDoor1, 6);
+            lever1Down = turnDownLever(lever1Down, 1);
         }
 
         //turn down the levers
-        if (cx === 3 && cz === -1 && angle< -20 && angle > -70) {
+        if (cx === 3 && cz === -1) {
             lever5PositionReached = true;
         }
-        if (cx === 8 && cz === 4 && angle< -20 && angle > -70) {
+        if (cx === 8 && cz === 4) {
             lever3PositionReached = true;
         }
-        if (cx === 2 && cz === 2 && angle< -20 && angle > -70) {
+        if (cx === 2 && cz === 2) {
             lever1PositionReached = true;
         }
 
