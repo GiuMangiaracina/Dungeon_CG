@@ -671,47 +671,6 @@ function initInteraction(){
         }
     };
 
-
-
-    /*var mouseState = false;
-    var lastMouseX = -100, lastMouseY = -100;
-    function doMouseDown(event) {
-        lastMouseX = event.pageX;
-        lastMouseY = event.pageY;
-        mouseState = true;
-    }
-    function doMouseUp(event) {
-        lastMouseX = 100;
-        lastMouseY = 100;
-        mouseState = false;
-    }
-    function doMouseMove(event) {
-        if(mouseState) {
-            var dx = event.pageX - lastMouseX;
-
-            var dy = lastMouseY - event.pageY;
-            lastMouseX = event.pageX;
-            lastMouseY = event.pageY;
-
-            if((dx != 0) || (dy != 0)) {
-                angle = angle + 0.1* dx;
-                //limit angles
-
-                console.log(angle);
-                elevation = elevation + 0.1* dy;
-
-                if (elevation>25){
-                    elevation=25;}
-
-                }
-            if (elevation<-38)
-            {
-                elevation=-38;}
-
-
-        }
-    }*/
-
     /**
      * This function checks the pointLockElement property to see if it is our canvas.
      * If so, it attached an event listener to handle the mouse movements with the updatePosition() function.
@@ -876,87 +835,6 @@ function turnDownLever(leverToCheckIsDown, leverIndex) {
     }
 
     return leverToCheckIsDown;
-}
-
-/*function animate3(deltaT) {
-    alpha = deltaT / 2;
-    var mat = worldViewProjectionMatrix[5];
-
-    var uma = 1 - alpha;
-    if (alpha >= 0 && alpha <= 1) {
-        var c0 = uma * uma * uma;
-        var c1 = 3 * uma * uma * alpha;
-        var c2 = 3 * uma * alpha * alpha;
-        var c3 = alpha * alpha * alpha;
-        var cx = [0, 0, 0, 0];
-        var cy = [0, -0.10, -0.2, -0.3];
-        var cz = [0, 0, 0, 0];
-        //translation matrix
-        var MT = utils.MakeTranslateMatrix(cx[0] * c0 + cx[1] * c1 + cx[2] * c2 + cx[3] * c3,
-            cy[0] * c0 + cy[1] * c1 + cy[2] * c2 + cy[3] * c3,
-            cz[0] * c0 + cz[1] * c1 + cz[2] * c2 + cz[3] * c3);
-
-
-        worldViewProjectionMatrix[5] = utils.multiplyMatrices(worldViewProjectionMatrix[5], MT);
-
-
-    } else {
-        worldViewProjectionMatrix[5] = utils.multiplyMatrices(mat, utils.MakeTranslateMatrix(0, -0.28, 0));
-    }
-}*/
-
-/**
- * This function is used to turn lever3 down.
- */
-function turnDownLever3() {
-    if(!lever3Down) {
-        lever3Down = true;
-        let planarMirrorMatrix = utils.multiplyMatrices(utils.MakeTranslateMatrix(0.0, 0.5, 0.0),
-                utils.multiplyMatrices(utils.MakeScaleNuMatrix(1.0, -1.0, 1.0),
-                utils.MakeTranslateMatrix(0.0, -0.5, 0.0)));
-        objectWorldMatrix[2] = utils.multiplyMatrices(planarMirrorMatrix, objectWorldMatrix[2]);
-    }
-}
-
-//DOOR 1
-/*function animate1(deltaT) {
-    alpha = deltaT / 2;
-    var mat = worldViewProjectionMatrix[6];
-
-    var uma = 1 - alpha;
-    if (alpha >= 0 && alpha <= 1) {
-        var c0 = uma * uma * uma;
-        var c1 = 3 * uma * uma * alpha;
-        var c2 = 3 * uma * alpha * alpha;
-        var c3 = alpha * alpha * alpha;
-        var cx = [0, 0, 0, 0];
-        var cy = [0, -0.10, -0.2, -0.3];
-        var cz = [0, 0, 0, 0];
-        //translation matrix
-        var MT = utils.MakeTranslateMatrix(cx[0] * c0 + cx[1] * c1 + cx[2] * c2 + cx[3] * c3,
-            cy[0] * c0 + cy[1] * c1 + cy[2] * c2 + cy[3] * c3,
-            cz[0] * c0 + cz[1] * c1 + cz[2] * c2 + cz[3] * c3);
-
-
-        worldViewProjectionMatrix[6] = utils.multiplyMatrices(worldViewProjectionMatrix[6], MT);
-
-
-    } else {
-        worldViewProjectionMatrix[6] = utils.multiplyMatrices(mat, utils.MakeTranslateMatrix(0, -0.28, 0));
-    }
-}*/
-
-/**
- * This function is used to turn lever1 down.
- */
-function turnDownLever1() {
-    if(!lever1Down) {
-        lever1Down = true;
-        let planarMirrorMatrix = utils.multiplyMatrices(utils.MakeTranslateMatrix(0.0, 0.5, 0.0),
-            utils.multiplyMatrices(utils.MakeScaleNuMatrix(1.0, -1.0, 1.0),
-                utils.MakeTranslateMatrix(0.0, -0.5, 0.0)));
-        objectWorldMatrix[1] = utils.multiplyMatrices(planarMirrorMatrix, objectWorldMatrix[1]);
-    }
 }
 
 function drawScene() {
