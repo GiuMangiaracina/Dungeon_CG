@@ -35,6 +35,8 @@ var lightTypeHandle = new Array(2);
 var materialSpecColorHandle = new Array(2);
 var materialSpecPowerHandle  = new Array(2);			// It's the handle for the exponent used to tune the specular reflection.
 var objectSpecularPower = 20.0;									// Actual exponent used.
+var lightDecayFactorHandle = new Array(2);           // It's the handle for the exponent used to tune the light decay.
+var lightDecayFactor = 1.0;                                     // Actual decay used.
 
 // Parameters for light definition (directional light).
 var dirLightAlpha  = - utils.degToRad(90);
@@ -47,6 +49,8 @@ var lightDirection = [Math.cos(dirLightAlpha) * Math.cos(dirLightBeta),
 ];
 var lightPosition = [0.0, 10.0, 0.0, 1.0];
 var lightColor = new Float32Array([1.0, 1.0, 1.0, 1.0]);	// White light.
+
+var moveLightHandle = new Array(2);
 var moveLight = 0;                                                      //0 : move the camera - 1 : Move the lights
 
 // Transformed light direction and position for the scene. We need a matrix for each object.
@@ -72,9 +76,9 @@ var nTexture 		= [];						// Number of textures per object.
 
 // Parameters for Camera: look-in camera (first person).
 // N.B.: the camera points toward negative z axis at the beginning.
-var cx = 0;
+var cx = 7;
 var cy = 0.5;
-var cz = 0;
+var cz = 8;
 var elevation = 0.0;
 var angle = 0.0;
 
@@ -93,7 +97,7 @@ var accumulator3 = 0.0;
 
 var currentShader = 0;                			// Defines the current shader in use (0 -> Gouraud, 1 -> Phong).
 var textureInfluence = 1.0;						// Slider value for texture influence.
-var ambientLightInfluence = 0.2;				// Slider value for light influence.
+var ambientLightInfluence = 0.3;				// Slider value for light influence.
 var ambientLightColor = [1.0, 1.0, 1.0, 1.0];	// Starting light color is white.
 
 var dungeonMap = [];				            // Matrix containing the map that states where the can or cannot go.
@@ -120,9 +124,9 @@ var previousYDoor5 = 0.0;
 
 var mouseSensitivity = 0.05;
 
-function main(){
+function main() {
 
-    canvas=document.getElementById("my-canvas");
+    canvas = document.getElementById("my-canvas");
     checkbox = document.getElementById("chbx");
 
     try {
@@ -133,8 +137,8 @@ function main(){
     if(gl) {
 
         // Setting the size for the canvas equal to half the browser window and other useful parameters.
-        var w=canvas.clientWidth;
-        var h=canvas.clientHeight;
+        var w = canvas.clientWidth;
+        var h = canvas.clientHeight;
         gl.clearColor(1.0, 1.0, 1.0, 1.0);
         gl.viewport(0.0, 0.0, w, h);
         gl.enable(gl.DEPTH_TEST);
@@ -169,7 +173,7 @@ function main(){
  * Called when the slider for texture influence is changed.
  * @param val Coefficient to multiply to the color given by the texture.
  */
-function updateTextureInfluence(val){
+function updateTextureInfluence(val) {
     textureInfluence = val;
 }
 
@@ -177,14 +181,14 @@ function updateTextureInfluence(val){
  * Called when the type of the light is changed.
  * @param val Integer value representing the type of light chosen by the player.
  */
-function updateLightType(val){
+function updateLightType(val) {
     currentLightType = parseInt(val);
 }
 
 /**
  * Called when the player checks the "Move Lights" box, enabling or disabling the movement of the light along with him.
  */
-function updateLightMovement(){
+function updateLightMovement() {
     if (checkbox.checked === true) {
         moveLight = 1;
     } else {
@@ -197,7 +201,7 @@ function updateLightMovement(){
  * Called when the type of the shader is changed.
  * @param val Integer value representing the type of shader chosen by the player.
  */
-function updateShader(val){
+function updateShader(val) {
     currentShader = parseInt(val);
 }
 
@@ -205,7 +209,7 @@ function updateShader(val){
  * Called when the slider for ambient light influence is changed.
  * @param val Coefficient to multiply to the color given by the ambient light.
  */
-function updateAmbientLightInfluence(val){
+function updateAmbientLightInfluence(val) {
     ambientLightInfluence = val;
 }
 
@@ -213,12 +217,16 @@ function updateAmbientLightInfluence(val){
  * Called when the colour of the ambient light is changed. A conversion from hex to standard RGBA is performed.
  * @param val Value representing the colour of the ambient light chosen by the player.
  */
-function updateAmbientLightColor(val){
+function updateAmbientLightColor(val) {
     val = val.replace('#','');
     ambientLightColor[0] = parseInt(val.substring(0,2), 16) / 255;      // R
     ambientLightColor[1] = parseInt(val.substring(2,4), 16) / 255;      // G
     ambientLightColor[2] = parseInt(val.substring(4,6), 16) / 255;      // B
     ambientLightColor[3] = 1.0;                                               // Alpha
+}
+
+function updateLightDecayFactor(val) {
+    lightDecayFactor = val;
 }
 
 /**
@@ -282,12 +290,14 @@ function loadShaders(){
 
         textureInfluenceHandle[i] = gl.getUniformLocation(shaderProgram[i], 'textureInfluence');
         ambientLightInfluenceHandle[i] = gl.getUniformLocation(shaderProgram[i], 'ambientLightInfluence');
-        ambientLightColorHandle[i]= gl.getUniformLocation(shaderProgram[i], 'ambientLightColor');
+        ambientLightColorHandle[i] = gl.getUniformLocation(shaderProgram[i], 'ambientLightColor');
 
         lightDirectionHandle[i] = gl.getUniformLocation(shaderProgram[i], 'lightDirection');
         lightPositionHandle[i] = gl.getUniformLocation(shaderProgram[i], 'lightPosition');
         lightColorHandle[i] = gl.getUniformLocation(shaderProgram[i], 'lightColor');
-        lightTypeHandle[i]= gl.getUniformLocation(shaderProgram[i],'lightType');
+        lightTypeHandle[i] = gl.getUniformLocation(shaderProgram[i],'lightType');
+        lightDecayFactorHandle[i] = gl.getUniformLocation(shaderProgram[i], 'lightDecay');
+        moveLightHandle[i] = gl.getUniformLocation(shaderProgram[i], 'moveLight');
     }
 }
 
@@ -385,7 +395,7 @@ function loadModel(modelName){
                     var image=new Image();
                     image.webglTexture=false;
 
-                    image.onload=function(e) {
+                    image.onload=function() {
 
                         var texture=gl.createTexture();
 
@@ -469,7 +479,7 @@ function initInteraction(){
         canvas.requestPointerLock();
     };
 
-    var keyFunction =function(e) {
+    let keyFunction = function(e) {
         let mapStartingPointX = 6;
         let mapStartingPointZ = 9;
 
@@ -864,12 +874,14 @@ function drawScene() {
         gl.uniformMatrix4fv(normalMatrixPositionHandle[currentShader], gl.FALSE,
             utils.transposeMatrix(normalsTransformMatrix[i]));						// VS Gouraud, VS Phong.
 
-        // Light vectors.
+        // Light vectors and other attributes.
         gl.uniform3fv(lightDirectionHandle[currentShader], lightDirectionTransformed);
         gl.uniform4fv(lightPositionHandle[currentShader], lightPositionTransformed);
         gl.uniform4fv(lightColorHandle[currentShader], lightColor);
 
         gl.uniform1i(lightTypeHandle[currentShader], currentLightType);				// VS Gouraud, FS Phong.
+        gl.uniform1f(lightDecayFactorHandle[currentShader], lightDecayFactor);
+        gl.uniform1i(moveLightHandle[currentShader], moveLight);
 
         // Ambient light.
         gl.uniform4f(ambientLightColorHandle[currentShader], ambientLightColor[0],			// VS Gouraud, FS Phong.
@@ -971,6 +983,27 @@ function drawScene() {
         }
         if (cx === 2 && cz === 2) {
             lever1PositionReached = true;
+        }
+
+        // If the end of the dungeon is reached, show the ending screen.
+        if (cx === 8 && cz === 8) {
+            document.getElementById("my-canvas").hidden = true;
+            document.getElementById("my-canvas2").hidden = false;
+
+            const canvas2 = document.getElementById("my-canvas2");
+            const ctx = canvas2.getContext("2d");
+            ctx.font = "70px JAF Herb";
+            ctx.fillStyle = "rgb(255, 255, 255)";
+            ctx.fillText("Congratulations, you escaped from the Dungeon!", 30, 360);
+            ctx.fillText("Press the Space Bar to restart.", 290, 440);
+
+            let keyFunction = function(e) {
+                if(e.keyCode === 32) {      // Space bar.
+                    location.reload();
+                }
+            };
+
+            window.addEventListener("keyup", keyFunction, false);
         }
 
         gl.disableVertexAttribArray(vertexPositionHandle[currentShader]);

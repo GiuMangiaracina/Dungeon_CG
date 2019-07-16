@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html lang="en">
 	<head>
 	<meta charset='utf-8'>
 	<title>Enter the Dungeon</title>
@@ -8,59 +8,60 @@
 	<script src="quaternion.min.js"></script>
 	
 	</head>
-	<body style="background-color: grey;" onLoad="main();">
-		<table>
-		<tr>
-			<td>
-			<canvas id="my-canvas" width="1600" height="900" style="background-color: red;">
-			Your browser does not support the HTML5 canvas element.
+	<body style="background-color: darkgrey;" onLoad="main();">
+		<div style="float: left; background-color: black">
+			<canvas id="my-canvas" width="1440" height="810" style="background-color: white;">
+				Your browser does not support the HTML5 canvas element.
 			</canvas>
-			<div id="legend" style="position: absolute; z-index: 1; left: 11px; top: 790px; width:350px; height:140px; background-color: white; border-style: solid; border-color: red; opacity: 0.9; padding: 5px 10px 5px 10px; overflow:auto">
-				<p style="font-family: Courier New">
-					<b>    Command</b>
-					<ul style="font-family: Courier New">
-
-						<li>Press <b>w</b>, <b>a</b>, <b>s</b>, <b>d</b> to move </li>
-				<li><b> Use the Mouse  </b>to rotate the view</li>
-				<li> Press <b>Q </b> near levers to open the doors</li>
-					</ul>
-				</p>
-			</div>			
-			</td>
-
-			<td style="background-color: white; font-family: courier; padding:10px;">
-			<p><h2> Options </h2></p>
+			<canvas id="my-canvas2" width="1440" height="810" style="background-color: black;" hidden>
+				Your browser does not support the HTML5 canvas element.
+			</canvas>
+		</div>
+		<div style="background-color: white; width: 420px; height: 810px; padding: 0 10px 0 10px; float: left;">
+			<p><h2> Options </h2>
 			<p><b> Light Source </b></p>
-			<form>
-				<input type="radio" name="light" onchange="updateLightType(this.value);" value="1" checked><name id="direct"> Directional </name><br/>
-				<input type="radio" name="light" onchange="updateLightType(this.value);" value="2" ><name id="point"> Point </name><br/>
-				<input type="radio" name="light" onchange="updateLightType(this.value);" value="3" ><name id="pointDecay"> Point w. Decay </name><br/>
-				<input type="radio" name="light" onchange="updateLightType(this.value);" value="4" ><name id="spot"> Spot </name><br/>
-				<input type="radio" name="light" onchange="updateLightType(this.value);" value="5" ><name id="none"> No Light </name><br/>
-			</form>
+				<form>
+					<input type="radio" name="light" onchange="updateLightType(this.value);" value="1" checked><name id="direct"> Directional </name><br/>
+					<input type="radio" name="light" onchange="updateLightType(this.value);" value="2" ><name id="point"> Point </name><br/>
+					<input type="radio" name="light" onchange="updateLightType(this.value);" value="3" ><name id="pointDecay"> Point with decay </name><br/>
+					<input type="radio" name="light" onchange="updateLightType(this.value);" value="4" ><name id="spot"> Spot </name><br/>
+					<input type="radio" name="light" onchange="updateLightType(this.value);" value="5" ><name id="none"> No Light </name><br/>
+				</form>
+			<p><b> Decay </b><i>(for point light with decay and spot light) </i></p>
+				<div id="slider3"> 0
+					<input id="slide3" type="range" min="0" max="2" step="1" value="1" onchange="updateLightDecayFactor(this.value);"/> 2 <br>
+				</div>
 			<p><b> Light Computation </b></p>
-			<form>
-				<input type="radio" name="type" onchange="updateShader(this.value);" value="1" > Per Vertex <br/>
-				<input type="radio" name="type" onchange="updateShader(this.value);" value="0" checked> Per Fragment <br/>
-			</form>			
+				<form>
+					<input type="radio" name="type" onchange="updateShader(this.value);" value="1" > Per Vertex <br/>
+					<input type="radio" name="type" onchange="updateShader(this.value);" value="0" checked> Per Fragment <br/>
+				</form>
 			<p><b> Texture Influence </b></p>
-			<div id="slider1"> 0 
-				<input id="slide1" type="range" min="0" max="1" step="0.1" value="1" onchange="updateTextureInfluence(this.value);"/> 1 <br/>
-			</div>	
+				<div id="slider1"> 0
+					<input id="slide1" type="range" min="0" max="1" step="0.1" value="1" onchange="updateTextureInfluence(this.value);"/> 1 <br/>
+				</div>
 			<p><b> Ambient Light Influence </b></p>
-			<div id="slider2">	0
-				<input id="slide2" type="range" min="0" max="1" step="0.1" value="0.2" onchange="updateAmbientLightInfluence(this.value);"/> 1 <br/>
-				<p><b>  Ambient Light Color </b></p>
-				<p align="center">
-				<input id="colorPicker" type="color" value="#FFFFFF" onchange="updateAmbientLightColor(this.value);"/>
+				<div id="slider2">	0
+					<input id="slide2" type="range" min="0" max="1" step="0.1" value="0.3" onchange="updateAmbientLightInfluence(this.value);"/> 1 <br/>
+				</div>
+			<p><b>  Ambient Light Color </b></p>
+				<p align="left">
+					<input id="colorPicker" type="color" value="#FFFFFF" onchange="updateAmbientLightColor(this.value);"/>
+				</p>
+			<p><b> Illumination Type </b></p>
+					<input type="checkbox" id="chbx" onclick="updateLightMovement();"/> Local illumination<br/>
+			<br>
+			<div id="legend" style="width: 405px; height: 115px; background-color: lightgreen; border-style: solid; border-color: green; opacity: 0.9; padding-left: 10px; overflow:auto">
+				<p style="font-family: Consolas">
+					<b> Commands:</b>
+				<ul style="font-family: Consolas">
+					<li> click on the canvas to <b>trap</b> the mouse</li>
+					<li> press <b>W</b>, <b>A</b>, <b>S</b>, <b>D</b> to move </li>
+					<li> use the <b>mouse</b> to rotate the camera</li>
+					<li> press <b>Q</b> near levers to open the respective doors</li>
+				</ul>
 				</p>
 			</div>
-			
-			<p><b> Illumination Type </b></p>
-
-				<input type="checkbox" id="chbx" onclick="updateLightMovement();"/> Local illumination<br/>
-			</td>
-		</tr>
-		</table>
+		</div>
 	</body>
 </html>

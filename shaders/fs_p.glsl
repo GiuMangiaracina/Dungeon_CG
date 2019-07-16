@@ -21,9 +21,11 @@ uniform vec3 lightDirection;
 uniform vec4 lightPosition;
 uniform vec4 lightColor;
 uniform int lightType;
+uniform float lightDecay;
+uniform int moveLight;
 
-float lightTargetDistance = 60.0;		// Target distance (g) for point light with decay and spot light.
-float lightDecay = 0.1;                 // Decay (beta) for point light with decay and spot light.
+
+float lightTargetDistance = 0.2;		// Target distance (g) for point light with decay and spot light.
 float outerConeAngle = 100.0;           // Angle of the outer cone for spot light (in degrees).
 float innerConeAngle = 60.0;            // Angle of the inner cone for spot light (in degrees).
 
@@ -60,6 +62,10 @@ void main() {
 
     vec3 nEyeDirection = normalize(-fsPosition);
     vec3 nNormal = normalize(fsNormal);
+
+    // Setting a different target distance for the different illumination contexts:
+    // 0.3 when the light is following the player, 8.5 when the light is at y = 10.
+    moveLight == 1 ? lightTargetDistance = 0.3 : lightTargetDistance = 8.0;
 
     // Instead of computing it as nlightDirection = - normalize(lightDirection),
     // we call a function to define light direction and size even for not-directional case.
