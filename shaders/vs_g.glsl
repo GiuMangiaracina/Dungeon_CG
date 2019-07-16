@@ -24,10 +24,10 @@ uniform int lightType;
 uniform vec4 ambientLightColor;
 uniform float ambientLightInfluence;
 
-float lightTargetDistance = 61.0;		// Target distance (g) for point light with decay and spot light.
-float lightDecay = 0.3;                 // Decay (beta) for point light with decay and spot light.
-float outerConeAngle = 120.0;           // Angle of the outer cone for spot light (in degrees).
-float innerConeAngle = 90.0;            // Angle of the inner cone for spot light (in degrees).
+float lightTargetDistance = 60.0;		    // Target distance (g) for point light with decay and spot light.
+float lightDecay = 0.1;                 // Decay (beta) for point light with decay and spot light.
+float outerConeAngle = 100.0;           // Angle of the outer cone for spot light (in degrees).
+float innerConeAngle = 60.0;            // Angle of the inner cone for spot light (in degrees).
 
 vec4 lightModel(int lightType, vec3 objPos) {
 
@@ -48,7 +48,7 @@ vec4 lightModel(int lightType, vec3 objPos) {
         float lLen = length(vec3(lightPosition) - objPos);
         nLightDir = normalize(vec3(lightPosition) - objPos);
         lDim = pow((lightTargetDistance / length(vec3(lightPosition) - objPos)), lightDecay);
-    } else if(lightType == 4) {		// Spot light //todo edit this
+    } else if(lightType == 4) {		// Spot light
         nLightDir = normalize(vec3(lightPosition) - objPos);
         lCosIn = cos(radians(innerConeAngle / 2.0));
         lCosOut = cos(radians(outerConeAngle / 2.0));

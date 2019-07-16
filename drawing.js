@@ -32,19 +32,18 @@ var lightDirectionHandle = new Array(2);
 var lightPositionHandle = new Array(2);
 var lightColorHandle  = new Array(2);
 var lightTypeHandle = new Array(2);
-//var eyePositionHandle = new Array(2);
 var materialSpecColorHandle = new Array(2);
 var materialSpecPowerHandle  = new Array(2);			// It's the handle for the exponent used to tune the specular reflection.
 var objectSpecularPower = 20.0;									// Actual exponent used.
 
 // Parameters for light definition (directional light).
-var dirLightAlpha = -utils.degToRad(120);
-var dirLightBeta  = -utils.degToRad(90);
+var dirLightAlpha  = - utils.degToRad(90);
+var dirLightBeta = - utils.degToRad(120);
 
 // Computation of direct light direction vector.
 var lightDirection = [Math.cos(dirLightAlpha) * Math.cos(dirLightBeta),
-    Math.sin(dirLightAlpha),
-    Math.cos(dirLightAlpha) * Math.sin(dirLightBeta),
+    Math.sin(dirLightBeta),
+    Math.cos(dirLightBeta) * Math.sin(dirLightAlpha),
 ];
 var lightPosition = [0.0, 10.0, 0.0, 1.0];
 var lightColor = new Float32Array([1.0, 1.0, 1.0, 1.0]);	// White light.
@@ -61,23 +60,23 @@ var sceneObjects; // Total number of objects in the scene.
 // The following arrays have sceneObjects as dimension.	
 var vertexBufferObjectId = [];					// Matrix containing vertices of all the objects in the scene.
 var indexBufferObjectId = [];					// Matrix containing indices used to display the objects in the scene.
-var objectWorldMatrix = [];					// Matrix containing the transform of each object.
+var objectWorldMatrix = [];					    // Matrix containing the transform of each object.
 var worldViewMatrix = [];						// Matrix containing the product of the world matrix with the view matrix.
-var worldViewProjectionMatrix = [];						// Matrix containing the product of the world-view matrix with the perspective matrix.
+var worldViewProjectionMatrix = [];				// Matrix containing the product of the world-view matrix with the perspective matrix.
 var normalsTransformMatrix = [];				// Matrix containing the transform of the normals for each object (inverse-transpose of world-view matrix).
 var facesNumber		= [];						// Used to establish the right order of indices to respect back face culling.
 var diffuseColor 	= [];						// Diffuse material colors of objects.
 var specularColor   = [];						// Specular material colors of the objects.
-var diffuseTextureObj = [];					// Texture material.
+var diffuseTextureObj = [];					    // Texture material.
 var nTexture 		= [];						// Number of textures per object.
 
-// Parameters for Camera: look-in camera.
+// Parameters for Camera: look-in camera (first person).
 // N.B.: the camera points toward negative z axis at the beginning.
 var cx = 0;
 var cy = 0.5;
 var cz = 0;
-var elevation = 0;
-var angle = 0;
+var elevation = 0.0;
+var angle = 0.0;
 
 // Delta for movement.
 var delta = 1;
@@ -92,12 +91,9 @@ var accumulator1 = 0.0;
 var accumulator2 = 0.0;
 var accumulator3 = 0.0;
 
-// Eye parameters: we need one eye vector for each object in the scene.
-//var observerPositionObj = [];
-
 var currentShader = 0;                			// Defines the current shader in use (0 -> Gouraud, 1 -> Phong).
-var textureInfluence = 0.0;						// Slider value for texture influence.
-var ambientLightInfluence = 0.0;				// Slider value for light influence.
+var textureInfluence = 1.0;						// Slider value for texture influence.
+var ambientLightInfluence = 0.2;				// Slider value for light influence.
 var ambientLightColor = [1.0, 1.0, 1.0, 1.0];	// Starting light color is white.
 
 var dungeonMap = [];				            // Matrix containing the map that states where the can or cannot go.
@@ -129,23 +125,19 @@ function main(){
     canvas=document.getElementById("my-canvas");
     checkbox = document.getElementById("chbx");
 
-
-    try{
+    try {
         gl = canvas.getContext("webgl2", {alpha: false});
-    }catch(e){
+    } catch(e) {
         console.log(e);
     }
-    if(gl){
+    if(gl) {
 
-        //Setting the size for the canvas equal to half the browser window
-        //and other useful parameters
+        // Setting the size for the canvas equal to half the browser window and other useful parameters.
         var w=canvas.clientWidth;
         var h=canvas.clientHeight;
         gl.clearColor(1.0, 1.0, 1.0, 1.0);
         gl.viewport(0.0, 0.0, w, h);
         gl.enable(gl.DEPTH_TEST);
-
-
 
         // Computation of the perspective matrix, done only once.
         perspectiveMatrix = utils.MakePerspective(85, w/h, 0.1, 100.0);
@@ -153,25 +145,21 @@ function main(){
         // Loads the map containing the "cells" the player can or cannot go.
         loadMap("Mapasterix.json");
 
-        // Opens the json file containing the 3D model to load,
-        // parses it to retrieve objects' data
+        // Opens the json file containing the 3D model to load, parses it to retrieve objects' data
         // and creates the VBO and IBO from them.
         // The vertex format is (x,y,z,nx,ny,nz,u,v).
         loadModel("Dungeon.diff2.json");
 
-        //Load shaders' code
-        //compile them
-        //retrieve the handles
+        // Load shaders' code, compile them and retrieve the handles.
         loadShaders();
-        //loadMap("Mapasterix.json");
-        //Setting up the interaction using keys
-        initInteraction();
 
+        //Setting up the interaction using keys and mouse.
+        initInteraction();
 
         //Rendering cycle
         drawScene();
 
-    }else{
+    } else {
         alert( "Error: Your browser does not appear to support WebGL.");
     }
 
@@ -179,25 +167,25 @@ function main(){
 
 /**
  * Called when the slider for texture influence is changed.
- * @param val coefficient to multiply to the color given by the texture.
+ * @param val Coefficient to multiply to the color given by the texture.
  */
 function updateTextureInfluence(val){
     textureInfluence = val;
 }
 
 /**
- *
- * @param val
+ * Called when the type of the light is changed.
+ * @param val Integer value representing the type of light chosen by the player.
  */
 function updateLightType(val){
     currentLightType = parseInt(val);
 }
 
 /**
- *
+ * Called when the player checks the "Move Lights" box, enabling or disabling the movement of the light along with him.
  */
 function updateLightMovement(){
-    if (checkbox.checked == true) {
+    if (checkbox.checked === true) {
         moveLight = 1;
     } else {
         moveLight = 0;
@@ -206,36 +194,37 @@ function updateLightMovement(){
 }
 
 /**
- *
- * @param val
+ * Called when the type of the shader is changed.
+ * @param val Integer value representing the type of shader chosen by the player.
  */
 function updateShader(val){
     currentShader = parseInt(val);
 }
 
 /**
- *
- * @param val
+ * Called when the slider for ambient light influence is changed.
+ * @param val Coefficient to multiply to the color given by the ambient light.
  */
 function updateAmbientLightInfluence(val){
     ambientLightInfluence = val;
 }
 
 /**
- *
- * @param val
+ * Called when the colour of the ambient light is changed. A conversion from hex to standard RGBA is performed.
+ * @param val Value representing the colour of the ambient light chosen by the player.
  */
 function updateAmbientLightColor(val){
-
     val = val.replace('#','');
-    ambientLightColor[0] = parseInt(val.substring(0,2), 16) / 255;
-    ambientLightColor[1] = parseInt(val.substring(2,4), 16) / 255;
-    ambientLightColor[2] = parseInt(val.substring(4,6), 16) / 255;
-    ambientLightColor[3] = 1.0;
+    ambientLightColor[0] = parseInt(val.substring(0,2), 16) / 255;      // R
+    ambientLightColor[1] = parseInt(val.substring(2,4), 16) / 255;      // G
+    ambientLightColor[2] = parseInt(val.substring(4,6), 16) / 255;      // B
+    ambientLightColor[3] = 1.0;                                               // Alpha
 }
 
 /**
- *
+ * This function loads the file containing the shaders (both Gouraud and Phong), gets their source, compiles them and
+ * links them to the program.
+ * After that, retrieves all the handles to the attributes and the uniforms of the shaders.
  */
 function loadShaders(){
     //*** Shaders loading using external files
@@ -295,8 +284,6 @@ function loadShaders(){
         ambientLightInfluenceHandle[i] = gl.getUniformLocation(shaderProgram[i], 'ambientLightInfluence');
         ambientLightColorHandle[i]= gl.getUniformLocation(shaderProgram[i], 'ambientLightColor');
 
-        //eyePositionHandle[i] = gl.getUniformLocation(shaderProgram[i], 'eyePosition');
-
         lightDirectionHandle[i] = gl.getUniformLocation(shaderProgram[i], 'lightDirection');
         lightPositionHandle[i] = gl.getUniformLocation(shaderProgram[i], 'lightPosition');
         lightColorHandle[i] = gl.getUniformLocation(shaderProgram[i], 'lightColor');
@@ -305,7 +292,8 @@ function loadShaders(){
 }
 
 /**
- * Loads the map containing the "cells" where the player can go (corridors, 0) or cannot go (walls and other space, 1).
+ * Loads the map containing the "cells" where the player can go (corridors and open doors, 0 and 2(open)) or
+ * cannot go (walls or other space, and closed doors, 1 and 2(closed)).
  * @param mapName Name of the file containing the map.
  */
 function loadMap(mapName){
@@ -318,8 +306,9 @@ function loadMap(mapName){
 }
 
 /**
- *
- * @param modelName
+ * This function load every parameter needed to display the model: vertices, normals, textures, indices,
+ * diffuse and specular colours of each material and also puts the indices in a way that respects back face culling.
+ * @param modelName Name of the model to load.
  */
 function loadModel(modelName){
 
@@ -335,7 +324,6 @@ function loadModel(modelName){
             worldViewProjectionMatrix[i] =  new utils.identityMatrix();
             diffuseColor[i] = [1.0, 1.0, 1.0, 1.0];
             specularColor[i] = [1.0, 1.0, 1.0, 1.0];
-            //observerPositionObj[i] = new Array(3);
             lightDirectionTransformed[i] = new Array(3);
             lightPositionTransformed[i]	= new Array(4);
         }
@@ -364,7 +352,6 @@ function loadModel(modelName){
                 if(loadedModel.materials[meshMatIndex].properties[n].key === "$clr.specular") specularColorPropertyIndex = n;
             }
 
-
             // Getting vertices and normals.
             var objVertex = [];
             for (let n = 0; n < loadedModel.meshes[i].vertices.length/3; n++){
@@ -386,15 +373,12 @@ function loadModel(modelName){
             facesNumber[i] = loadedModel.meshes[i].faces.length;
             console.log("Face Number: " + facesNumber[i]);
 
-            //s=0;
-
             if(UVFileNamePropertyIndex >= 0){
 
                 nTexture[i]=true;
 
                 console.log(loadedModel.materials[meshMatIndex].properties[UVFileNamePropertyIndex].value);
                 var imageName = loadedModel.materials[meshMatIndex].properties[UVFileNamePropertyIndex].value;
-
 
                 var getTexture = function(image_URL){
 
@@ -409,16 +393,6 @@ function loadModel(modelName){
 
                         console.log("Image w=" + image.width + " Image h=" + image.height);
 
-                        /*if (!utils.isPowerOfTwo(image.width) || !utils.isPowerOfTwo(image.height)) {
-                            console.log("Image " + image.src + " is not power of 2!");
-                            // Scale up the texture to the next highest power of two dimensions.
-                            var can = document.createElement("canvas");
-                            can.width = utils.nextHighestPowerOfTwo(image.width);
-                            can.height = utils.nextHighestPowerOfTwo(image.height);
-                            var ctx = can.getContext("2d");
-                            ctx.drawImage(image, 0, 0, image.width, image.height);
-                            image = can;
-                        }*/
                         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
                         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
                         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
@@ -473,13 +447,15 @@ function loadModel(modelName){
             // Creating the objects' world matrix
             objectWorldMatrix[i] = loadedModel.rootnode.children[i].transformation;
         }
-
-
     });
 }
 
 /**
- * //todo fix this
+ * This function enables the interaction with the player. He can use W, A, S, D key to move and use the mouse to
+ * rotate the camera. Moreover, he can press Q in front of a lever to activate a lever, thus opening the respective
+ * door.
+ * All the different situations regarding the relative position and rotation of the camera with respect to player
+ * movement are handled here.
  */
 function initInteraction(){
 
@@ -516,12 +492,6 @@ function initInteraction(){
         }
 
         if (e.keyCode === 87) {	// W
-            // todo handle "portable lights"
-            //if(moveLight == 0)elevation+=delta * 10.0;
-            //else{
-            //	lightDirection[0] += 0.1 * Math.sin(utils.degToRad(angle));
-
-            //	lightDirection[2] -= 0.1 * Math.cos(utils.degToRad(angle));
 
             if(angle > -45.0 && angle <= 45.0) {                                // Looking forward, going forward.
                 // The conditions are about the absence (0) of a wall or of a open (2) door (from both sides).
@@ -587,11 +557,6 @@ function initInteraction(){
         }
 
         if (e.keyCode === 83) {	// S
-            //if(moveLight == 0)elevation-=delta*10.0;
-            //else{
-            //	lightDirection[0] -= 0.1 * Math.sin(utils.degToRad(angle));
-            //	lightDirection[2] += 0.1 * Math.cos(utils.degToRad(angle));
-            //else lightPosition[2] +=delta;
 
             if(angle > -45.0 && angle <= 45.0) {                                // Looking forward, going backward.
                 // The conditions are about the absence (0) of a wall or of a open (2) door (from both sides).
@@ -626,10 +591,6 @@ function initInteraction(){
         }
 
         if (e.keyCode === 68) {	// D
-            //if(moveLight == 0)angle+=delta * 1.0;
-            //else{
-            //	lightDirection[0] += 0.1 * Math.cos(utils.degToRad(angle));
-            //	lightDirection[2] += 0.1 * Math.sin(utils.degToRad(angle));
 
             if(angle > -45.0 && angle <= 45.0) {                                // Looking forward, going right.
                 // The conditions are about the absence (0) of a wall or of a open (2) door (from both sides).
@@ -677,8 +638,8 @@ function initInteraction(){
     };
 
     /**
-     * This function checks the pointLockElement property to see if it is our canvas.
-     * If so, it attached an event listener to handle the mouse movements with the updatePosition() function.
+     * This function checks the pointLockElement property to see if it is in our canvas.
+     * If so, it attaches an event listener to handle the mouse movements with the updatePosition() function.
      * If not, it removes the event listener again.
      */
     function lockChangeAlert() {
@@ -716,7 +677,7 @@ function initInteraction(){
         if(elevationTemp >= 90) {
             elevation = 90;
         }
-        else if (elevationTemp <= -90) {
+        else if(elevationTemp <= -90) {
             elevation = -90;
         }
         else {
@@ -724,19 +685,9 @@ function initInteraction(){
         }
     }
 
-    // Mouse movement handled with pointer lock.
-
-
-    //'window' is a JavaScript object (if "canvas", it will not work). todo
     window.addEventListener("keyup", keyFunction, false);
-    /*canvas.addEventListener("mousedown", doMouseDown, false);
-    canvas.addEventListener("mouseup", doMouseUp, false);
-    canvas.addEventListener("mousemove", doMouseMove, false);*/
-
-    //	canvas.addEventListener("click",clickOnLever,false);
 
     //activate to have resize
-
 
     // Pointer lock event listener.
     // Hook pointer lock state change events for different browsers
@@ -744,6 +695,7 @@ function initInteraction(){
     document.addEventListener('mozpointerlockchange', lockChangeAlert, false);
 }
 
+var lightNameChanged = false;
 /**
  * This function computes matrices used elsewhere in the code. These matrices include the view matrix,
  * the transformed light position and direction for each object (done once here since Camera Space coordinates
@@ -757,10 +709,25 @@ function computeMatrices() {
 
     if(moveLight === 1) {
         lightPosition = [cx, cy, cz, 1];
-        lightDirection = [Math.cos(elevation) * Math.cos(-angle),
-            Math.sin(elevation),
-            Math.cos(elevation) * Math.sin(-angle),
+        let tempAlpha = utils.degToRad(angle + 90.0);  // The adjustment is due to the fact that the camera points
+                                                             // towards the negative z-axis.
+        let tempBeta = utils.degToRad(elevation);
+
+        lightDirection = [Math.cos(-tempAlpha) * Math.cos(-tempBeta),
+            Math.sin(tempBeta),
+            Math.cos(-tempBeta) * Math.sin(-tempAlpha)
         ];
+
+        // Change the names of the lights on the HTML file.
+        if(!lightNameChanged) {
+            document.getElementById("direct").innerHTML = " God's Blessing";
+            document.getElementById("point").innerHTML = " Lantern";
+            document.getElementById("pointDecay").innerHTML = " Adjustable Lantern";
+            document.getElementById("spot").innerHTML = " Flashlight";
+
+            lightNameChanged = true;
+        }
+
     }
 
     // Computation of light position for the whole scene, done once in the CPU.
@@ -778,14 +745,21 @@ function computeMatrices() {
 }
 
 /**
- * Function ud to reset the light after passing from moveLights === 1 to moveLights === 0.
+ * Function used to reset the lights after passing from moveLights === 1 to moveLights === 0.
  */
 function resetLights() {
     lightDirection = [Math.cos(dirLightAlpha) * Math.cos(dirLightBeta),
-        Math.sin(dirLightAlpha),
-        Math.cos(dirLightAlpha) * Math.sin(dirLightBeta),
+        Math.sin(dirLightBeta),
+        Math.cos(dirLightBeta) * Math.sin(dirLightAlpha),
     ];
     lightPosition = [0.0, 10.0, 0.0, 1.0];
+
+    document.getElementById("direct").innerHTML = " Directional";
+    document.getElementById("point").innerHTML = " Point";
+    document.getElementById("pointDecay").innerHTML = " Point w. Decay";
+    document.getElementById("spot").innerHTML = " Spot";
+
+    lightNameChanged = false;
 }
 
 function doResize() {
@@ -864,6 +838,13 @@ function turnDownLever(leverToCheckIsDown, leverIndex) {
     return leverToCheckIsDown;
 }
 
+/**
+ * Function that performs the rendering cycle.
+ * It uses the handles acquired previously to store different values on shaders' uniforms and attributes (using an
+ * ARRAY_BUFFER to store vertices (x, y, z, nx, ny, nz, u, v) and an ELEMENT_ARRAY_BUFFER to store indices (indexed
+ * triangle list technique is used).
+ * The activation of levers and doors is also checked here.
+ */
 function drawScene() {
 //canvas.onresize = doResize();
     computeMatrices();
@@ -876,11 +857,6 @@ function drawScene() {
     for (let i = 0; i < sceneObjects; i++) {
 
         /***** UNIFORMS *****/
-        // Transform matrices.
-        //if(door5Open=false){
-        //worldViewMatrix[5]=multiplyMatrices(worldViewMatrix[5],utils.MakeTranslateMatrix(0,3,0))
-        //}
-
         gl.uniformMatrix4fv(matrixWVHandle[currentShader], gl.FALSE,
             utils.transposeMatrix(worldViewMatrix[i]));								// VS Gouraud, VS Phong.
         gl.uniformMatrix4fv(matrixWVPHandle[currentShader], gl.FALSE,
@@ -922,12 +898,6 @@ function drawScene() {
             specularColor[i][3]);		// VS Gouraud, FS Phong.
         gl.uniform1f(materialSpecPowerHandle[currentShader], objectSpecularPower);		// VS Gouraud, FS Phong.
 
-
-        //todo this should not be needed.
-        /*gl.uniform3f(eyePositionHandle[currentShader],	observerPositionObj[i][0],
-                                                            observerPositionObj[i][1],
-                                                            observerPositionObj[i][2]);*/
-
         /***** INPUT ATTRIBUTES *****/
         // This buffer now contains all the information needed about the vertices for each object.
         gl.bindBuffer(gl.ARRAY_BUFFER, vertexBufferObjectId[i]);
@@ -947,8 +917,7 @@ function drawScene() {
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBufferObjectId[i]);
         gl.drawElements(gl.TRIANGLES, facesNumber[i] * 3, gl.UNSIGNED_SHORT, 0);
 
-
-        //activate door 5
+        // Activate door 5.
         if (door5Open === true) {
             let currentTime = (new Date).getTime();                 // milliseconds.
             let deltaT;
@@ -963,7 +932,7 @@ function drawScene() {
             lever5Down = turnDownLever(lever5Down, 3);
         }
 
-        //activate door 3
+        // Activate door 3.
         if (door3Open === true) {
             let currentTime2 = (new Date).getTime();
             let deltaT2;
@@ -978,7 +947,7 @@ function drawScene() {
             lever3Down = turnDownLever(lever3Down, 2);
         }
 
-        //activate door 1
+        // Activate door 1.
         if (door1Open === true) {
             let currentTime3 = (new Date).getTime();
             let deltaT3;
@@ -993,7 +962,7 @@ function drawScene() {
             lever1Down = turnDownLever(lever1Down, 1);
         }
 
-        //turn down the levers
+        // Setting of booleans that state whether the player is in the right position on the map to activate a lever.
         if (cx === 3 && cz === -1) {
             lever5PositionReached = true;
         }
@@ -1003,7 +972,6 @@ function drawScene() {
         if (cx === 2 && cz === 2) {
             lever1PositionReached = true;
         }
-
 
         gl.disableVertexAttribArray(vertexPositionHandle[currentShader]);
         gl.disableVertexAttribArray(vertexNormalHandle[currentShader]);

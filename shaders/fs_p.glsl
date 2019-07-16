@@ -22,10 +22,10 @@ uniform vec4 lightPosition;
 uniform vec4 lightColor;
 uniform int lightType;
 
-float lightTargetDistance = 61.0;		// Target distance (g) for point light with decay and spot light.
-float lightDecay = 0.3;                 // Decay (beta) for point light with decay and spot light.
-float outerConeAngle = 120.0;           // Angle of the outer cone for spot light (in degrees).
-float innerConeAngle = 90.0;            // Angle of the inner cone for spot light (in degrees).
+float lightTargetDistance = 60.0;		// Target distance (g) for point light with decay and spot light.
+float lightDecay = 0.1;                 // Decay (beta) for point light with decay and spot light.
+float outerConeAngle = 100.0;           // Angle of the outer cone for spot light (in degrees).
+float innerConeAngle = 60.0;            // Angle of the inner cone for spot light (in degrees).
 
 vec4 lightModel(int lightType, vec3 objPos) {
 
