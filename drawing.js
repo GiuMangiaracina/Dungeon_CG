@@ -51,7 +51,10 @@ var lightPosition = [0.0, 10.0, 0.0, 1.0];
 var lightColor = new Float32Array([1.0, 1.0, 1.0, 1.0]);	// White light.
 
 var moveLightHandle = new Array(2);
-var moveLight = 0;                                                      //0 : move the camera - 1 : Move the lights
+var moveLight = 0;                                                      // 0 : move the camera - 1 : Move the lights
+var lightNameChanged = false;                                           // Boolean used to check whether the names of
+                                                                        // the fields used to select different lights
+                                                                        // are changed or not.
 
 // Transformed light direction and position for the scene. We need a matrix for each object.
 var lightDirectionTransformed = [];
@@ -123,6 +126,7 @@ var previousYDoor3 = 0.0;
 var previousYDoor5 = 0.0;
 
 var mouseSensitivity = 0.05;
+
 
 function main() {
 
@@ -225,6 +229,11 @@ function updateAmbientLightColor(val) {
     ambientLightColor[3] = 1.0;                                               // Alpha
 }
 
+/**
+ * Called when the slider for light decay is changed.
+ * @param val Value to use to set the decay of point light with decay and spot light. The decay is an exponent in the
+ *            light formulas(0: linear, 1: inverse-linear, 2: inverse-squared).
+ */
 function updateLightDecayFactor(val) {
     lightDecayFactor = val;
 }
@@ -664,7 +673,6 @@ function initInteraction(){
     document.addEventListener('mozpointerlockchange', lockChangeAlert, false);
 }
 
-var lightNameChanged = false;
 /**
  * This function computes matrices used elsewhere in the code. These matrices include the view matrix,
  * the transformed light position and direction for each object (done once here since Camera Space coordinates
@@ -731,32 +739,6 @@ function resetLights() {
     lightNameChanged = false;
 }
 
-function doResize() {
-    // set canvas dimensions
-    var canvas = document.getElementById("my-canvas");
-
-
-
-    if((window.innerWidth > 40) && (window.innerHeight > 240)) {
-
-
-
-
-        canvas.width  = window.innerWidth-16;
-
-        canvas.height = window.innerHeight-200;
-        var w=canvas.clientWidth;
-        var h=canvas.clientHeight;
-
-        gl.clearColor(0.0, 0.0, 0.0, 1.0);
-        gl.viewport(0.0, 0.0, w, h);
-
-        aspectRatio = w/h;
-    }
-
-
-}
-
 /**
  * Function used to animate a door; it is an implementation of Bezier interpolation.
  * @param accumulatedTime Value representing the incrementing time during the animation.
@@ -815,7 +797,6 @@ function turnDownLever(leverToCheckIsDown, leverIndex) {
  * The activation of levers and doors is also checked here.
  */
 function drawScene() {
-//canvas.onresize = doResize();
     computeMatrices();
 
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
