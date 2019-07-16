@@ -72,13 +72,13 @@ var facesNumber		= [];						// Used to establish the right order of indices to r
 var diffuseColor 	= [];						// Diffuse material colors of objects.
 var specularColor   = [];						// Specular material colors of the objects.
 var diffuseTextureObj = [];					    // Texture material.
-var nTexture 		= [];						// Number of textures per object.
+var nTexture 		= [];						// Boolean that states if each object has a texture or not.
 
 // Parameters for Camera: look-in camera (first person).
 // N.B.: the camera points toward negative z axis at the beginning.
-var cx = 7;
+var cx = 0;
 var cy = 0.5;
-var cz = 8;
+var cz = 0;
 var elevation = 0.0;
 var angle = 0.0;
 
@@ -309,9 +309,6 @@ function loadShaders(){
 function loadMap(mapName){
     utils.get_json(modelsDir + mapName, function(loadedMap){
         dungeonMap = loadedMap;
-        console.log(dungeonMap);
-        console.log("carattere :"+ dungeonMap[11][6]);
-        //punto iniziale [11,6], 5 passi.
     });
 }
 
@@ -326,8 +323,6 @@ function loadModel(modelName){
 
         sceneObjects = loadedModel.meshes.length ;
 
-        console.log("Found " + sceneObjects + " objects...");
-
         // Preparing to store objects' world matrix & the lights & material properties per object.
         for (let i = 0; i < sceneObjects; i++) {
             objectWorldMatrix[i] = new utils.identityMatrix();
@@ -341,16 +336,6 @@ function loadModel(modelName){
         for (let i = 0; i < sceneObjects ; i++) {
 
             // Creating the vertex data.
-            console.log("Object[" + i + "]:");
-            console.log("MeshName: " + loadedModel.rootnode.children[i].name);
-            console.log("Vertices: " + loadedModel.meshes[i].vertices.length);
-            console.log("Normals: " + loadedModel.meshes[i].normals.length);
-            if (loadedModel.meshes[i].texturecoords){
-                console.log("UVss: " + loadedModel.meshes[i].texturecoords[0].length);
-            } else {
-                console.log("No UVs for this mesh!" );
-            }
-
             var meshMatIndex = loadedModel.meshes[i].materialindex;
 
             var UVFileNamePropertyIndex = -1;
@@ -381,13 +366,10 @@ function loadModel(modelName){
             }
 
             facesNumber[i] = loadedModel.meshes[i].faces.length;
-            console.log("Face Number: " + facesNumber[i]);
 
             if(UVFileNamePropertyIndex >= 0){
 
-                nTexture[i]=true;
-
-                console.log(loadedModel.materials[meshMatIndex].properties[UVFileNamePropertyIndex].value);
+                nTexture[i] = true;
                 var imageName = loadedModel.materials[meshMatIndex].properties[UVFileNamePropertyIndex].value;
 
                 var getTexture = function(image_URL){
@@ -400,8 +382,6 @@ function loadModel(modelName){
                         var texture=gl.createTexture();
 
                         gl.bindTexture(gl.TEXTURE_2D, texture);
-
-                        console.log("Image w=" + image.width + " Image h=" + image.height);
 
                         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
                         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
@@ -419,11 +399,6 @@ function loadModel(modelName){
                 };
 
                 diffuseTextureObj[i] = getTexture(modelsDir + imageName);
-
-                console.log("TXT filename: " +diffuseTextureObj[i]);
-                console.log("TXT src: " +diffuseTextureObj[i].src);
-                console.log("TXT loaded?: " +diffuseTextureObj[i].webglTexture);
-
             } else {
                 nTexture[i] = false;
             }
@@ -432,7 +407,6 @@ function loadModel(modelName){
             diffuseColor[i] = loadedModel.materials[meshMatIndex].properties[diffuseColorPropertyIndex].value; 		// Diffuse value
             diffuseColor[i].push(1.0);																				// Alpha value added
             specularColor[i] = loadedModel.materials[meshMatIndex].properties[specularColorPropertyIndex].value;	// Specular color
-            console.log("Specular: "+ specularColor[i]);
 
             // Vertices, normals and UV set 1.
             vertexBufferObjectId[i] = gl.createBuffer();
@@ -487,19 +461,6 @@ function initInteraction(){
         let doorIsOpen = ((((cx === 3 || cx === 5) && cz === 3) && door1Open === true) ||
                              ((cx === 9 && (cz === 2 || cz === 4)) && door3Open === true) ||
                              ((cx === 4 && (cz === -3 || cz === -1)) && door5Open === true));
-
-        if (e.keyCode === 38) {	// Arrow up
-            cy += delta;
-        }
-
-        //to get the actual position
-        if (e.keyCode === 40) {	// Arrow down
-            cy -=delta;
-
-            console.log(" actual position:(cx:"+(cx) + "/" + "cy: "+ cy + "/" +"cz: "+ (cz) + ") - "+ elevation + "." + angle);
-            console.log(" map position:(cx:"+(cx+6) + "/" + "cy: "+ cy + "/" +"cz: "+ (cz+9) + ") - "+ elevation + "." + angle);
-            console.log(" camera angle: " + angle);
-        }
 
         if (e.keyCode === 87) {	// W
 
@@ -655,10 +616,8 @@ function initInteraction(){
     function lockChangeAlert() {
         if (document.pointerLockElement === canvas ||
             document.mozPointerLockElement === canvas) {
-            console.log('The pointer lock status is now locked');
             document.addEventListener("mousemove", updatePosition, false);
         } else {
-            console.log('The pointer lock status is now unlocked');
             document.removeEventListener("mousemove", updatePosition, false);
         }
     }
@@ -893,7 +852,7 @@ function drawScene() {
 
         // Textures (FS Gouraud, FS Phong).
         gl.uniform1i(textureFileHandle[currentShader], 0);		// Texture channel 0 used for diff txt.
-        if (nTexture[i] == true && diffuseTextureObj[i].webglTexture) {
+        if (nTexture[i] === true && diffuseTextureObj[i].webglTexture) {
             gl.activeTexture(gl.TEXTURE0);
             gl.bindTexture(gl.TEXTURE_2D, diffuseTextureObj[i].webglTexture);
         }
